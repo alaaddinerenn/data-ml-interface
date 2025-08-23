@@ -6,20 +6,20 @@ from stats import show_stats
 st.markdown(
     """
     <h1 style="position: fixed; top: 40px; left: 20px; margin: 0; z-index: 999;">
-        Data&ML Arayüzü
+        Data & ML Interface
     </h1>
     """,
     unsafe_allow_html=True
 )
 
 st.write("\n\n\n\n\n")
-st.title("🔍 Analiz Sayfası")
+st.title("🔍 Analysis Page")
 
 if 'cleaned' not in st.session_state:
     st.session_state.cleaned = False
 
-# Dosya yükleme
-load_file()  # df döndürmüyor artık, direkt session_state.df içine yazıyor
+# File upload
+load_file()  # No longer returns df, directly writes to session_state.df
 
 if "df" in st.session_state and not st.session_state.df.empty:
     show_stats()
@@ -27,7 +27,7 @@ if "df" in st.session_state and not st.session_state.df.empty:
     if not st.session_state.cleaned:
         df_clean, st.session_state.cleaned , st.session_state.already_cleaned = clean_data(st.session_state.df)
         st.session_state.df_clean = df_clean
-        if not st.session_state.already_cleaned and st.button("Ham veriyi ML sayfasına gönder"): # temizlemeden gönder.
+        if not st.session_state.already_cleaned and st.button("Send raw data to ML page"):
                     st.session_state.df_for_ml_clean = None
                     st.session_state.df_for_ml_raw = st.session_state.df
                     st.switch_page("pages/02_ML.py")
@@ -39,19 +39,19 @@ if "df" in st.session_state and not st.session_state.df.empty:
 
             col1, col2 = st.columns(2)
             with col1:
-                if st.button("Temizlenmiş veriyi ML sayfasına gönder", key="send_clean"):
+                if st.button("Send cleaned data to ML page", key="send_clean"):
                     st.session_state.df_for_ml_raw = None
                     st.session_state.df_for_ml_clean = st.session_state.df_clean
                     st.switch_page("pages/02_ML.py")
             with col2:
-                if st.button("Ham veriyi ML sayfasına gönder", key="send_raw"):
+                if st.button("Send raw data to ML page", key="send_raw"):
                     st.session_state.df_for_ml_clean = None
                     st.session_state.df_for_ml_raw = st.session_state.df
                     st.switch_page("pages/02_ML.py")
         else:
-            if st.button("Veriyi ML sayfasına gönder", key="send_any"):
+            if st.button("Send data to ML page", key="send_any"):
                 st.session_state.df_for_ml_raw = st.session_state.df
                 st.session_state.df_for_ml_clean = None
                 st.switch_page("pages/02_ML.py")
 else:
-    st.info("Lütfen bir veri seti yükleyin.")
+    st.info("Please upload a dataset.")

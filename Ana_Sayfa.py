@@ -1,28 +1,28 @@
 import streamlit as st
 
-st.set_page_config(page_title="Data & ML Arayüzü", page_icon="📊")
+st.set_page_config(page_title="Data & ML Interface", page_icon="📊")
 
-# Sayfa içeriğinin üstünde başlık (sidebar açık/kapalı fark etmez)
+# Title at the top of the page (regardless of sidebar visibility)
 st.markdown(
     """
     <h1 style="position: fixed; top: 40px; left: 0px; text-align: center;  font-size: 64px; width: 100%; margin: 0; z-index: 999;">
-        Data & ML Arayüzü
+        Data & ML Interface
     </h1>
     """,
     unsafe_allow_html=True
 )
 
-# Sayfa içeriği biraz aşağıda başlasın diye boşluk bırak
+# Add space so the page content starts lower
 st.write("\n\n\n\n\n")
 st.write("\n\n\n\n\n")
 
-st.title("🏠 Ana Sayfa")
-st.write("Bu uygulama ile veri analizi yapabilir ve makine öğrenmesi modelleri çalıştırabilirsiniz.")
+st.title("🏠 Home Page")
+st.write("With this application, you can perform data analysis and run machine learning models.")
 st.write("\n\n\n\n\n")
 st.write("\n\n\n\n\n")
 
 st.markdown(
-    "<h2 style='text-align: center;'>📂 Sayfalara Git</h2>",
+    "<h2 style='text-align: center;'>📂 Navigate to Pages</h2>",
     unsafe_allow_html=True
 )
 
@@ -32,7 +32,7 @@ st.markdown(
     <style>
     .card {
         display: flex;
-        flex-direction: column; /* emoji üstte, text altta */
+        flex-direction: column; /* emoji on top, text below */
         align-items: center;
         justify-content: center;
         text-align: center;
@@ -60,14 +60,14 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# 3 kolonlu layout
+# 3-column layout
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.markdown('<a class="card card-analiz" href="/Analiz" target="_self">📊<br>Analiz</a>', unsafe_allow_html=True)
+    st.markdown('<a class="card card-analiz" href="/Analiz" target="_self">📊<br>Analysis</a>', unsafe_allow_html=True)
 
 with col2:
-    st.markdown('<a class="card card-ml" href="/ML" target="_self">🤖<br>Makine Öğrenmesi</a>', unsafe_allow_html=True)
+    st.markdown('<a class="card card-ml" href="/ML" target="_self">🤖<br>Machine Learning</a>', unsafe_allow_html=True)
 
 with col3:
-    st.markdown('<a class="card card-hakkinda" href="/Hakkında" target="_self">ℹ️<br>Hakkında</a>', unsafe_allow_html=True)
+    st.markdown('<a class="card card-hakkinda" href="/Hakkında" target="_self">ℹ️<br>About</a>', unsafe_allow_html=True)

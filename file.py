@@ -1,23 +1,24 @@
+from typing import Any
 import streamlit as st
 import pandas as pd
 
-def load_file():
+def load_file() -> None | Any:
     uploaded_file = st.file_uploader(
-        "Bir CSV veya Excel dosyası yükleyin", 
+        "Upload a CSV or Excel file", 
         type=['csv', 'xlsx', 'tsv']
     )
 
-    # Eğer dosya kaldırıldıysa (çarpıya basıldıysa)
+    # If the file is removed (by clicking the cross)
     if uploaded_file is None:
         for key in ["df", "df_clean", "cleaned", "already_cleaned", "file_name"]:
             if key in st.session_state:
                 del st.session_state[key]
         return None
 
-    # Eğer yeni dosya yüklendiyse veya ilk defa yükleniyorsa
+    # If a new file is uploaded or it's the first upload
     if ('file_name' not in st.session_state) or (st.session_state.file_name != uploaded_file.name):
         st.session_state.file_name = uploaded_file.name
-        st.session_state.cleaned = False  # temizleme flag'ini resetle
+        st.session_state.cleaned = False  # Reset the cleaning flag
         
         try:
             if uploaded_file.name.endswith('.csv'):
@@ -27,9 +28,9 @@ def load_file():
             else:
                 df = pd.read_excel(uploaded_file)
 
-            st.session_state.df = df  # DataFrame'i sakla
-            st.success("Dosya başarıyla yüklendi ve DataFrame'e dönüştürüldü!")
+            st.session_state.df = df  # Store the DataFrame
+            st.success("File successfully uploaded and converted to a DataFrame!")
         except Exception as e:
-            st.error(f"Dosya okunurken hata oluştu: {e}")
+            st.error(f"An error occurred while reading the file: {e}")
 
-    return st.session_state.get("df", None)  # Hep session_state'den oku
+    return st.session_state.get("df", None)  # Always read from session_state

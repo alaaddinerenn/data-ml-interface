@@ -6,11 +6,11 @@ from utils import download_plot
 
 
 def chunks(lst, n):
-    """Listeyi n elemanlı parçalara böl."""
+    """Split the list into chunks of size n."""
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
 
-# Grafik çizme fonksiyonu, seçilen özellik listesi ve çizilecek grafik fonksiyonu parametre olarak alınabilir
+# Function to plot graphs, takes a list of selected features and a plotting function as parameters
 def plot_features_in_rows(df, selected_features, plot_func, n_cols=2, hue="label"):
     for chunk_features in chunks(selected_features, n_cols):
         cols = st.columns(len(chunk_features))
@@ -18,16 +18,15 @@ def plot_features_in_rows(df, selected_features, plot_func, n_cols=2, hue="label
             with cols[i]:
                 plot_func(feature, df, hue)
 
-# Örnek: Histogram + KDE için çizim fonksiyonu
+# Function to plot Histogram + KDE
 def plot_hist(feature, df, hue, palette=None) -> None:
     st.markdown(f"**{feature}**")
     fig, ax = plt.subplots()
     sns.histplot(data=df, x=feature, kde=True, bins=20, ax=ax)
     st.pyplot(fig)
     download_plot(fig, "hist", feature.strip())
-    
 
-# Örnek: Sınıfa Göre histogram
+# Histogram by class
 def plot_classhist(feature, df, hue, palette=None) -> None:
     st.markdown(f"**{feature}**")
     fig, ax = plt.subplots()
@@ -35,7 +34,7 @@ def plot_classhist(feature, df, hue, palette=None) -> None:
     st.pyplot(fig)
     download_plot(fig, "classhist", feature.strip())    
 
-# Örnek: Boxplot
+# Boxplot
 def plot_boxplot(feature, df, hue, palette=None) -> None:
     st.markdown(f"**{feature}**")
     fig, ax = plt.subplots()

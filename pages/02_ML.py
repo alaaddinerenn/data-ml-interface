@@ -4,94 +4,93 @@ from models.regressors import linear_regression_page, sgd_regression_page
 from models.classifiers import knn_page, decision_tree_page, random_forest_page, xgboost_classifier_page
 from models.clusterers import kmeans_page
 
-# Sayfa içeriğinin üstünde başlık (sidebar açık/kapalı fark etmez)
+# Title at the top of the page (regardless of sidebar visibility)
 st.markdown(
     """
     <h1 style="position: fixed; top: 40px; left: 20px; margin: 0; z-index: 999;">
-        Data & ML Arayüzü
+        Data & ML Interface
     </h1>
     """,
     unsafe_allow_html=True
 )
 
-# Sayfa içeriği biraz aşağıda başlasın diye boşluk bırak
+# Add space so the page content starts lower
 st.write("\n\n\n\n\n")
 
-st.title("🤖 Makine Öğrenmesi Sayfası")
+st.title("🤖 Machine Learning Page")
 
-
-# 📌 Her zaman dosya yükleme seçeneği olsun
+# 📌 Always have the file upload option
 df_uploaded = load_file()
 
-# Eğer kullanıcı yeni dosya yüklediyse → onu kullan ve session’daki ML verilerini override et
+# If the user uploads a new file → use it and override ML data in the session
 if df_uploaded is not None:
     df = df_uploaded
-    # Analizden gelen verileri sıfırla, çünkü artık yeni dosya var
+    # Reset data from the analysis page, as a new file is now available
     st.session_state.df_for_ml_clean = None
     st.session_state.df_for_ml_raw = None
-    st.write("📂 Dosyadan veri yüklendi:")
+    st.write("📂 Data loaded from file:")
     st.dataframe(df)
 
-# Eğer dosya yüklenmemişse → session’daki ML verilerine bak
+# If no file is uploaded → check ML data in the session
 elif 'df_for_ml_clean' in st.session_state and st.session_state.df_for_ml_clean is not None:
     df = st.session_state.df_for_ml_clean
-    st.write("✅ Temizlenmiş veri yüklendi (analiz sayfasından):")
+    st.write("✅ Cleaned data loaded (from analysis page):")
     st.dataframe(df)
 
 elif 'df_for_ml_raw' in st.session_state and st.session_state.df_for_ml_raw is not None:
     df = st.session_state.df_for_ml_raw
-    st.write("✅ Ham veri yüklendi (analiz sayfasından):")
+    st.write("✅ Raw data loaded (from analysis page):")
     st.dataframe(df)
 
 else:
     df = None
 
-# Eğer veri varsa
+# If data exists
 if df is not None and not df.empty:
-    # 1️⃣ ML türü seçimi
+    # 1️⃣ Select ML task type
     st.markdown(
             f"""
             <h2 style='text-align: center; font-size: 24px; font-weight: bold;'>
-                Görev Türünü Seçiniz
+                Select Task Type
             </h2>
             """,
             unsafe_allow_html=True
         )
     ml_type = st.selectbox(
         " ",
-        options=["Regresyon", "Sınıflandırma", "Kümeleme"],
+        options=["Regression", "Classification", "Clustering"],
         index=None,
-        help="Görev türünü seçin: Regresyon, Sınıflandırma veya Kümeleme"
+        help="Select the task type: Regression, Classification, or Clustering"
     )
 
     if ml_type:
         st.markdown(
             f"""
             <h2 style='text-align: center; font-size: 24px; font-weight: bold;'>
-                {ml_type} Algoritması Seçiniz
+                Select {ml_type} Algorithm
             </h2>
             """,
             unsafe_allow_html=True
         )
 
-        # 2️⃣ Algoritma seçimi (ML türüne göre)
-        if ml_type == "Regresyon":
-            st.info("Regresyon: Sürekli değer tahmini için kullanılır.")
+        # 2️⃣ Select algorithm (based on ML type)
+        if ml_type == "Regression":
+            st.info("Regression: Used for predicting continuous values.")
             model_choice = st.selectbox(
                 " ",
                 options=["Linear Regression", "Stochastic Gradient Descent Regressor"],
                 index=None,
-                help="Algoritma hakkında bilgi almak için üzerine gelin."
+                help="Click on an algorithm it to learn about it."
             )
             if model_choice == "Linear Regression":
-                st.markdown("<span style='font-size:18px; font-weight:bold;'>En basit doğrusal regresyon algoritmasıdır.</span>", unsafe_allow_html=True)
+                st.markdown("<span style='font-size:18px; font-weight:bold;'>The simplest linear regression algorithm.</span>", unsafe_allow_html=True)
                 linear_regression_page(df)
             elif model_choice == "Stochastic Gradient Descent Regressor":
-                st.markdown("<span style='font-size:18px; font-weight:bold;'>Büyük veri setlerinde hızlı ve verimli regresyon sağlar.</span>", unsafe_allow_html=True)
+                st.markdown("<span style='font-size:18px; font-weight:bold;'>Provides fast and efficient regression for large datasets.</span>", unsafe_allow_html=True)
                 sgd_regression_page(df)
 
-        elif ml_type == "Sınıflandırma":
-            st.info("Sınıflandırma: Verileri kategorilere ayırmak için kullanılır.")
+        elif ml_type == "Classification":
+            st.info("Classification: Used for categorizing data into classes.")
             model_choice = st.selectbox(
                 " ",
                 options=["KNN Classifier", "Decision Tree Classifier", "Random Forest Classifier", "XGBoost Classifier"],
@@ -99,20 +98,20 @@ if df is not None and not df.empty:
                 label_visibility="collapsed"
             )
             if model_choice == "KNN Classifier":
-                st.markdown("<span style='font-size:18px; font-weight:bold;'>Komşu örneklerin etiketlerine göre sınıflandırma yapar.</span>", unsafe_allow_html=True)
+                st.markdown("<span style='font-size:18px; font-weight:bold;'>Classifies based on the labels of neighboring examples.</span>", unsafe_allow_html=True)
                 knn_page(df)
             elif model_choice == "Decision Tree Classifier":
-                st.markdown("<span style='font-size:18px; font-weight:bold;'>Karar ağaçları ile sınıflandırma yapar.</span>", unsafe_allow_html=True)
+                st.markdown("<span style='font-size:18px; font-weight:bold;'>Classifies using decision trees.</span>", unsafe_allow_html=True)
                 decision_tree_page(df)
             elif model_choice == "Random Forest Classifier":
-                st.markdown("<span style='font-size:18px; font-weight:bold;'>Birden fazla karar ağacının birleşimiyle daha güçlü sınıflandırma yapar.</span>", unsafe_allow_html=True)
+                st.markdown("<span style='font-size:18px; font-weight:bold;'>Provides stronger classification by combining multiple decision trees.</span>", unsafe_allow_html=True)
                 random_forest_page(df)
             elif model_choice == "XGBoost Classifier":
-                st.markdown("<span style='font-size:18px; font-weight:bold;'>Gradient boosting ile güçlü ve hızlı sınıflandırma sağlar.</span>", unsafe_allow_html=True)
+                st.markdown("<span style='font-size:18px; font-weight:bold;'>Provides powerful and fast classification using gradient boosting.</span>", unsafe_allow_html=True)
                 xgboost_classifier_page(df)
 
-        elif ml_type == "Kümeleme":
-            st.info("Kümeleme: Veri noktalarını benzerliklerine göre gruplar.")
+        elif ml_type == "Clustering":
+            st.info("Clustering: Groups data points based on their similarities.")
             model_choice = st.selectbox(
                 " ",
                 options=["K-Means"],
@@ -120,7 +119,7 @@ if df is not None and not df.empty:
                 label_visibility="collapsed"
             )
             if model_choice == "K-Means":
-                st.markdown("<span style='font-size:18px; font-weight:bold;'>Veri noktalarını k adet kümeye ayırır.</span>", unsafe_allow_html=True)
+                st.markdown("<span style='font-size:18px; font-weight:bold;'>Divides data points into k clusters.</span>", unsafe_allow_html=True)
                 kmeans_page(df)
 else:
-    st.info("📌 Lütfen bir veri seti yükleyin veya analiz sayfasından gönderin.")
+    st.info("📌 Please upload a dataset or send one from the analysis page.")

@@ -4,69 +4,68 @@ import streamlit as st
 
 def predict_with_model(model_type: str, results: dict) -> None:
     """
-    Kullanıcıdan input alarak modelin tahmin yapmasını sağlar ve scale edilmiş değerleri gösterir.
+    Allows the model to make predictions based on user input and displays scaled values.
 
     Args:
-        model_type (str): Model türü ("classification" veya "regression").
-        results (dict): Modelin eğitim sonuçları (session_state'den alınır).
+        model_type (str): Model type ("classification" or "regression").
+        results (dict): Training results of the model (retrieved from session_state).
     """
-    st.subheader("🔮 Yeni Bir Örnekle Tahmin Yap")
+    st.subheader("🔮 Make a Prediction with a New Example")
 
-    # Kullanıcıdan input al
+    # Get input from the user
     input_data = {}
     for feature in results["features"]:
         if "feature_types" in results and results["feature_types"].get(feature) == "categorical":
-            # Kategorik özellikler için selectbox
+            # Selectbox for categorical features
             unique_values = results["unique_values"][feature]
-            value = st.selectbox(f"{feature} değeri seçin:", unique_values, key=f"input_{feature}")
+            value = st.selectbox(f"Select value for {feature}:", unique_values, key=f"input_{feature}")
         else:
-            # Sayısal özellikler için number_input
-            value = st.number_input(f"{feature} değeri girin:", key=f"input_{feature}")
+            # Number input for numerical features
+            value = st.number_input(f"Enter value for {feature}:", key=f"input_{feature}")
         input_data[feature] = value
 
-    if st.button("Tahmin Yap"):
-        # Input'u DataFrame'e çevir
+    if st.button("Make Prediction"):
+        # Convert input to DataFrame
         input_df = pd.DataFrame([input_data])
 
-        # Scaler kontrolü
+        # Check for scaler
         scaler = results.get("scaler", None)
         if scaler is not None:
-            st.write(f"Mean: {scaler.mean_ if hasattr(scaler, 'mean_') else 'Yok'}")
-            st.write(f"Scale: {scaler.scale_ if hasattr(scaler, 'scale_') else 'Yok'}")
+            st.write(f"Mean: {scaler.mean_ if hasattr(scaler, 'mean_') else 'None'}")
+            st.write(f"Scale: {scaler.scale_ if hasattr(scaler, 'scale_') else 'None'}")
             scaled_input_df = pd.DataFrame(scaler.transform(input_df), columns=input_df.columns)
-            st.write("🔍 Ölçeklendirilmiş Değerler:")
+            st.write("🔍 Scaled Values:")
             st.dataframe(scaled_input_df)
         else:
             scaled_input_df = input_df
 
-        # Tahmin yap
+        # Make prediction
         model = results["model"]
         if model_type == "classification":
             prediction = model.predict(scaled_input_df)[0]
             probabilities = model.predict_proba(scaled_input_df)[0]
-            st.write(f"🔹 Tahmin Edilen Sınıf: **{prediction}**")
-            st.write("🔹 Sınıf Olasılıkları:")
+            st.write(f"🔹 Predicted Class: **{prediction}**")
+            st.write("🔹 Class Probabilities:")
             for i, prob in enumerate(probabilities):
-                st.write(f"  - Sınıf {model.classes_[i]}: {prob:.4f}")
+                st.write(f"  - Class {model.classes_[i]}: {prob:.4f}")
         elif model_type == "regression":
             prediction = model.predict(scaled_input_df)[0]
             if isinstance(prediction, (int, float)):
-                st.write(f"🔹 Tahmin Edilen Değer: **{prediction:.4f}**")
+                st.write(f"🔹 Predicted Value: **{prediction:.4f}**")
             else:
-                st.write(f"🔹 Tahmin Edilen Değer: **{prediction}**")
+                st.write(f"🔹 Predicted Value: **{prediction}**")
         else:
-            st.error("Geçersiz model türü. 'classification' veya 'regression' olmalı.")
-
+            st.error("Invalid model type. Must be 'classification' or 'regression'.")
 
 
 # -------------------------
-# 1. Encoding fonksiyonu
+# 1. Encoding function
 # -------------------------
 def encode_features(df, encoding_type="One-Hot Encoding", target_col=None):
     df_encoded = df.copy()
     
     if encoding_type == "One-Hot Encoding":
-        # target_col'u ayrı tut
+        # Keep target_col separate
         target = None
         if target_col:
             if isinstance(target_col, list):
@@ -76,7 +75,7 @@ def encode_features(df, encoding_type="One-Hot Encoding", target_col=None):
                 target = df_encoded[target_col]
                 df_encoded = df_encoded.drop(columns=[target_col])
         df_encoded = pd.get_dummies(df_encoded, drop_first=False)
-        # hedefi geri ekle
+        # Add the target back
         if target is not None:
             df_encoded = pd.concat([df_encoded, target], axis=1)
 
@@ -90,15 +89,15 @@ def encode_features(df, encoding_type="One-Hot Encoding", target_col=None):
 
 
 # -------------------------
-# Scaler seçimi
+# Scaler selection
 # -------------------------
 def get_scaler(scaler_name):
-    if scaler_name == "Standart Scaler (Z-Score)":
+    if scaler_name == "Standard Scaler (Z-Score)":
         return StandardScaler()
     elif scaler_name == "Min-Max Scaler":
         return MinMaxScaler()
     elif scaler_name == "Max-Abs Scaler":
         return MaxAbsScaler()
     # robust scaling
-    # scaler açıklaması eklenebilir
+    # Additional scaler descriptions can be added
     return None

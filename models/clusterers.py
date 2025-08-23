@@ -11,34 +11,34 @@ from utils import download_plot
 from models.utils import encode_features
 
 
-# --- Model Eğitimi ---
+# --- Model Training ---
 def train_kmeans(df) -> None:
-    st.subheader("🔹 KMeans Ayarları")
+    st.subheader("🔹 KMeans Settings")
 
-    # Kullanılacak feature seçimi
+    # Select features to use for clustering
     features = st.multiselect(
-        "Clustering için kullanılacak özellikleri seçin",
+        "Select features for clustering",
         options=df.columns,
         default=[col for col in df.columns if col != "cluster"]
     )
 
-    n_clusters = st.slider("Küme Sayısı (k)", 2, 10, 3)
-    encoding_type = st.radio("Encoding Tipi", ["One-Hot Encoding", "Label Encoding"])
-    scale_data = st.checkbox("Veriyi ölçeklendir (StandardScaler)", value=True)
+    n_clusters = st.slider("Number of Clusters (k)", 2, 10, 3)
+    encoding_type = st.radio("Encoding Type", ["One-Hot Encoding", "Label Encoding"])
+    scale_data = st.checkbox("Scale data (StandardScaler)", value=True)
     random_seed = st.number_input("Random Seed", value=42)
 
-    if st.button("Modeli Eğit", key="btn_train_kmeans"):
+    if st.button("Train Model", key="btn_train_kmeans"):
         if not features:
-            st.warning("En az bir özellik seçmelisiniz.")
+            st.warning("You must select at least one feature.")
             return
 
         # Encoding
         df_encoded = encode_features(df, encoding_type)
 
-        # X matrisi
+        # X matrix
         X = df_encoded[features]
 
-        # Scaling opsiyonel
+        # Optional scaling
         if scale_data:
             scaler = StandardScaler()
             X = scaler.fit_transform(X)
@@ -49,7 +49,7 @@ def train_kmeans(df) -> None:
         model = KMeans(n_clusters=n_clusters, random_state=random_seed, n_init=10)
         y_pred = model.fit_predict(X)
 
-        # Session’a kaydet
+        # Save to session
         st.session_state["kmeans_results"] = {
             "model": model,
             "X": X,
@@ -58,13 +58,13 @@ def train_kmeans(df) -> None:
             "scaled": scale_data
         }
 
-        st.success("✅ KMeans modeli başarıyla eğitildi!")
+        st.success("✅ KMeans model trained successfully!")
 
 
-# --- Analiz ---
+# --- Analysis ---
 def kmeans_analysis() -> None:
     if "kmeans_results" not in st.session_state:
-        st.warning("⚠ Önce modeli eğitmelisiniz.")
+        st.warning("⚠ You must train the model first.")
         return
 
     results = st.session_state["kmeans_results"]
@@ -72,22 +72,22 @@ def kmeans_analysis() -> None:
     X = results["X"]
     y_pred = results["y_pred"]
 
-    st.subheader("📊 Analiz Araçları")
+    st.subheader("📊 Analysis Tools")
     analysis_options = st.multiselect(
-        "Görselleştirmek istediğiniz analizleri seçin",
+        "Select analyses to visualize",
         ["Cluster Distribution", "Silhouette Score", "PCA 2D Plot", "Elbow Curve"],
         default=["Cluster Distribution"]
     )
 
     if "Cluster Distribution" in analysis_options:
-        st.write("🔹 Küme dağılımı")
+        st.write("🔹 Cluster Distribution")
         unique, counts = np.unique(y_pred, return_counts=True)
         dist_df = pd.DataFrame({"Cluster": unique, "Count": counts})
         st.dataframe(dist_df)
 
         fig, ax = plt.subplots()
 
-        # autopct ile hem sayı hem yüzde yazalım
+        # Display both count and percentage in pie chart
         def func(pct, allvals):
             absolute = int(round(pct/100.*sum(allvals)))
             return f"{absolute} ({pct:.1f}%)"
@@ -101,12 +101,12 @@ def kmeans_analysis() -> None:
             colors=pie_colors[:len(unique)]
         )
 
-        ax.axis("equal")  # Daireyi eşit yap
+        ax.axis("equal")  # Equal aspect ratio for the pie chart
         st.pyplot(fig)
         download_plot(fig, "cluster_distribution_pie")
 
-        # Boxplot: plotting.py fonksiyonu ile
-        st.subheader("🔹 Kümelere Göre Özelliklerin Boxplot'u")
+        # Boxplot for features by cluster
+        st.subheader("🔹 Boxplot of Features by Cluster")
         from plotting import plot_boxplot
         features = results["features"]
         df_box = pd.DataFrame(X, columns=features)
@@ -118,7 +118,7 @@ def kmeans_analysis() -> None:
     if "Silhouette Score" in analysis_options:
         score = silhouette_score(X, y_pred)
         st.subheader(f"🔹 **Silhouette Score:** {score:.4f}")
-        # Silhouette Plot (sklearn style)
+        # Silhouette Plot
         sample_scores = silhouette_samples(X, y_pred)
         n_clusters = len(np.unique(y_pred))
         sil_colors = ["#1E90FF", "#32CD32", "#FFA500"]
@@ -134,14 +134,14 @@ def kmeans_analysis() -> None:
                              facecolor=color, edgecolor=color, alpha=0.7)
             ax.text(-0.05, y_lower + 0.5 * size_cluster_i, str(i))
             y_lower = y_upper + 10  # 10 for spacing between clusters
-        ax.axvline(score, color="red", linestyle="--", label="Ortalama Silhouette")
+        ax.axvline(score, color="red", linestyle="--", label="Average Silhouette")
         ax.set_xlabel("Silhouette Coefficient Values")
         ax.set_ylabel("Sample Index")
         ax.set_title("Silhouette Plot for Each Cluster")
         ax.legend()
         st.pyplot(fig)
         download_plot(fig, "silhouette_plot")
-        
+
         # k vs silhouette score plot
         st.subheader("🔹 k vs Silhouette Score")
         k_range = range(2, 11)
@@ -152,14 +152,14 @@ def kmeans_analysis() -> None:
             sil_scores.append(silhouette_score(X, labels))
         fig2, ax2 = plt.subplots()
         ax2.plot(k_range, sil_scores, marker="o")
-        ax2.set_xlabel("Küme Sayısı (k)")
-        ax2.set_ylabel("Ortalama Silhouette Score")
+        ax2.set_xlabel("Number of Clusters (k)")
+        ax2.set_ylabel("Average Silhouette Score")
         ax2.set_title("k vs Silhouette Score")
         st.pyplot(fig2)
         download_plot(fig2, "k_vs_silhouette_score")
 
     if "PCA 2D Plot" in analysis_options:
-        st.subheader("🔹 PCA ile 2D Küme Görselleştirme")
+        st.subheader("🔹 PCA 2D Cluster Visualization")
         from matplotlib.colors import ListedColormap
         pca = PCA(n_components=2)
         X_pca = pca.fit_transform(X)

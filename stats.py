@@ -11,15 +11,15 @@ def show_stats(df=None) -> None:
             df = st.session_state.df_clean
         elif "df" in st.session_state and not st.session_state.df.empty:
             df = st.session_state.df
-    
+
     if df is not None and not df.empty:
-        st.subheader("Yüklemiş Olduğunuz Veri")
+        st.subheader("Uploaded Data")
         st.dataframe(df)
 
-        st.subheader("İstatistiksel Özet")
+        st.subheader("Statistical Summary")
         data_type = None
-                
-        # Hedef sütunlarını belirle
+
+        # Determine target columns
         target_cols = []
 
         if 'label' in df.columns:
@@ -30,25 +30,25 @@ def show_stats(df=None) -> None:
             data_type = 1  # regression
         elif 'cluster' in df.columns:
             target_cols = ['cluster']
-            data_type = 2  # cluster
+            data_type = 2  # clustering
         elif any(col.startswith("target") for col in df.columns):
             target_cols = [col for col in df.columns if col.startswith("target")]
             data_type = 3  # multiple regression
 
-        # Özellik sütunları
+        # Feature columns
         feature_df = df.drop(columns=target_cols)
 
-        # Describe göster
+        # Display describe
         st.dataframe(feature_df.describe().round(3))
 
         if data_type == 0:  # CLASSIFICATION
-            st.subheader("Sınıf Dağılımı")
+            st.subheader("Class Distribution")
 
             class_counts = df['label'].value_counts()
 
             fig, ax = plt.subplots()
 
-            # autopct ile hem sayı hem yüzde yazalım
+            # Display both count and percentage in pie chart
             def func(pct, allvals):
                 absolute = int(round(pct/100.*sum(allvals)))
                 return f"{absolute} ({pct:.1f}%)"
@@ -64,26 +64,25 @@ def show_stats(df=None) -> None:
             st.pyplot(fig)
             download_plot(fig, "pie")
 
-
             df_info = pd.DataFrame({
-                "Sütun Adı": list(df.columns),
-                "Veri Tipi": [str(dt) for dt in df.dtypes]
+                "Column Name": list(df.columns),
+                "Data Type": [str(dt) for dt in df.dtypes]
             })
 
-            st.subheader("Sütunlar ve Tipleri")
+            st.subheader("Columns and Data Types")
             st.dataframe(df_info)
 
-            st.subheader("🔹 Hangi Özelliklerin Grafiklerini Görmek İstersin?")
+            st.subheader("🔹 Which Features Would You Like to Visualize?")
             selected_features = st.multiselect(
-                "Özellik(leri) seç:",
+                "Select feature(s):",
                 options=df.columns[:-1],
                 default=df.columns[:2],
                 key="graph_4option"
             )
 
-            st.subheader("🔹 Hangi Grafik Türlerini Gösterelim?")
+            st.subheader("🔹 Which Plot Types Should We Show?")
             show_hist      = st.checkbox("📊 Histogram + KDE", value=True)
-            show_classhist = st.checkbox("🎨 Sınıfa Göre Histogram", value=True)
+            show_classhist = st.checkbox("🎨 Histogram by Class", value=True)
             show_boxplot   = st.checkbox("📦 Boxplot", value=True)
             show_scatter   = st.checkbox("🔵 Scatter Plot", value=True)
 
@@ -92,17 +91,17 @@ def show_stats(df=None) -> None:
                 plot_features_in_rows(df, selected_features, plot_hist, n_cols=2)
 
             if show_classhist:
-                st.markdown("## 🎨 Sınıfa Göre Histogram")
+                st.markdown("## 🎨 Histogram by Class")
                 plot_features_in_rows(df, selected_features, plot_classhist, n_cols=2)
 
             if show_boxplot:
-                st.markdown("## 📦 Boxplot (Sınıfa Göre)")
+                st.markdown("## 📦 Boxplot (By Class)")
                 plot_features_in_rows(df, selected_features, plot_boxplot, n_cols=2)
 
             if show_scatter:
-                st.markdown("## 🔵 Scatter Plot (2 Özellik Seçin)")
+                st.markdown("## 🔵 Scatter Plot (Select 2 Features)")
                 scatter_features = st.multiselect(
-                    "Scatter için iki özellik seçin:",
+                    "Select two features for scatter plot:",
                     options=df.columns[:-1],
                     default=df.columns[:2],
                     key="scatter_features"
@@ -124,16 +123,16 @@ def show_stats(df=None) -> None:
                     st.pyplot(fig)
                     download_plot(fig, "classhist", scatter_features)  
                 elif len(scatter_features) > 0:
-                    st.warning("Lütfen scatter plot için **tam olarak iki özellik** seçin.")
+                    st.warning("Please select exactly two features for the scatter plot.")
 
         if data_type == 2:  # CLUSTERING
-            st.subheader("Sınıf Dağılımı")
+            st.subheader("Cluster Distribution")
 
             class_counts = df['cluster'].value_counts()
 
             fig, ax = plt.subplots()
 
-            # autopct ile hem sayı hem yüzde yazalım
+            # Display both count and percentage in pie chart
             def func(pct, allvals):
                 absolute = int(round(pct/100.*sum(allvals)))
                 return f"{absolute} ({pct:.1f}%)"
@@ -149,26 +148,25 @@ def show_stats(df=None) -> None:
             st.pyplot(fig)
             download_plot(fig, "pie")
 
-
             df_info = pd.DataFrame({
-                "Sütun Adı": list(df.columns),
-                "Veri Tipi": [str(dt) for dt in df.dtypes]
+                "Column Name": list(df.columns),
+                "Data Type": [str(dt) for dt in df.dtypes]
             })
 
-            st.subheader("Sütunlar ve Tipleri")
+            st.subheader("Columns and Data Types")
             st.dataframe(df_info)
 
-            st.subheader("🔹 Hangi Özelliklerin Grafiklerini Görmek İstersin?")
+            st.subheader("🔹 Which Features Would You Like to Visualize?")
             selected_features = st.multiselect(
-                "Özellik(leri) seç:",
+                "Select feature(s):",
                 options=df.columns[:-1],
                 default=df.columns[:2],
                 key="graph_4option"
             )
 
-            st.subheader("🔹 Hangi Grafik Türlerini Gösterelim?")
+            st.subheader("🔹 Which Plot Types Should We Show?")
             show_hist      = st.checkbox("📊 Histogram + KDE", value=True)
-            show_classhist = st.checkbox("🎨 Sınıfa Göre Histogram", value=True)
+            show_classhist = st.checkbox("🎨 Histogram by Class", value=True)
             show_boxplot   = st.checkbox("📦 Boxplot", value=True)
             show_scatter   = st.checkbox("🔵 Scatter Plot", value=True)
 
@@ -177,17 +175,17 @@ def show_stats(df=None) -> None:
                 plot_features_in_rows(df, selected_features, plot_hist, n_cols=2)
 
             if show_classhist:
-                st.markdown("## 🎨 Sınıfa Göre Histogram")
+                st.markdown("## 🎨 Histogram by Class")
                 plot_features_in_rows(df, selected_features, plot_classhist, n_cols=2, hue="cluster")
 
             if show_boxplot:
-                st.markdown("## 📦 Boxplot (Sınıfa Göre)")
+                st.markdown("## 📦 Boxplot (By Class)")
                 plot_features_in_rows(df, selected_features, plot_boxplot, n_cols=2, hue="cluster")
 
             if show_scatter:
-                st.markdown("## 🔵 Scatter Plot (2 Özellik Seçin)")
+                st.markdown("## 🔵 Scatter Plot (Select 2 Features)")
                 scatter_features = st.multiselect(
-                    "Scatter için iki özellik seçin:",
+                    "Select two features for scatter plot:",
                     options=df.columns[:-1],
                     default=df.columns[:2],
                     key="scatter_features"
@@ -209,7 +207,6 @@ def show_stats(df=None) -> None:
                     st.pyplot(fig)
                     download_plot(fig, "classhist", scatter_features)  
                 elif len(scatter_features) > 0:
-                    st.warning("Lütfen scatter plot için **tam olarak iki özellik** seçin.")
-                        
+                    st.warning("Please select exactly two features for the scatter plot.")
 
             st.markdown("---")
