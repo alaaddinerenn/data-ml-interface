@@ -48,7 +48,8 @@ def train_linear_regressor(df) -> None:
         features = st.multiselect(
             "Select Features for the Model",
             options=encoded_feature_options,
-            default=encoded_feature_options
+            default=encoded_feature_options,
+            key="linreg_features"
         )
         X = df_encoded[features]
         y = df[target]
