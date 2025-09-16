@@ -21,7 +21,7 @@ A **Streamlit** application designed to empower non-programmers to explore datas
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/data-ml-interface.git
+   git clone https://github.com/alaaddinerenn/data-ml-interface.git
    cd data-ml-interface
    ```
 
