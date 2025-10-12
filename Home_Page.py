@@ -1,6 +1,6 @@
 import streamlit as st
 
-st.set_page_config(page_title="Data & ML Interface", page_icon="📊")
+st.set_page_config(page_title="Data & ML Interface", page_icon="📊", layout='wide')
 
 # Title at the top of the page (regardless of sidebar visibility)
 st.markdown(

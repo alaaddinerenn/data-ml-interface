@@ -3,9 +3,11 @@ from file import load_file
 from utils import compare, clean_data
 from stats import show_stats
 
+st.set_page_config(page_title="Analysis", page_icon="📊", layout='wide')
+
 st.markdown(
     """
-    <h1 style="position: fixed; top: 40px; left: 20px; margin: 0; z-index: 999;">
+    <h1 style="position: fixed; top: 40px; left: 50%; transform: translateX(-50%); margin: 0; z-index: 999;">
         Data & ML Interface
     </h1>
     """,

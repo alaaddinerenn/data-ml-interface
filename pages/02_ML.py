@@ -4,6 +4,8 @@ from models.regressors import linear_regression_page, sgd_regression_page
 from models.classifiers import knn_page, decision_tree_page, random_forest_page, xgboost_classifier_page
 from models.clusterers import kmeans_page
 
+st.set_page_config(page_title="Data & ML Interface", page_icon="🤖", layout='wide')
+
 # Title at the top of the page (regardless of sidebar visibility)
 st.markdown(
     """
