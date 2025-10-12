@@ -233,6 +233,7 @@ def compare(df_before: pd.DataFrame, df_after: pd.DataFrame):
             st.markdown(f"**Newly Added Categories:** {added if added else 'None'}")
             st.markdown(f"**Removed Categories:** {removed if removed else 'None'}")
 
+
 def clean_data(df):
     if df is None or df.empty:
         st.warning("⚠️ No data available.")
@@ -288,6 +289,7 @@ def clean_data(df):
         return df_cleaned, True, False
 
     return df, False, False
+
 
 def encode_features(df, encoding_type="One-Hot Encoding"):
     df_encoded = df.copy()

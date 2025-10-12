@@ -11,7 +11,6 @@ from utils import download_plot
 from models.utils import encode_features
 
 
-# --- Model Training ---
 def train_kmeans(df) -> None:
     st.subheader("🔹 KMeans Settings")
 
@@ -61,7 +60,6 @@ def train_kmeans(df) -> None:
         st.success("✅ KMeans model trained successfully!")
 
 
-# --- Analysis ---
 def kmeans_analysis() -> None:
     if "kmeans_results" not in st.session_state:
         st.warning("⚠ You must train the model first.")
@@ -192,10 +190,8 @@ def kmeans_analysis() -> None:
         download_plot(fig, "elbow_curve")
 
 
-# --- Page ---
 def kmeans_page(df) -> None:
     st.title("KMeans Clustering")
     train_kmeans(df)
     st.markdown("---")
     kmeans_analysis()
-

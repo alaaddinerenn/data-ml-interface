@@ -46,9 +46,9 @@ st.markdown(
         color: white !important;
         line-height: 1.4;
     }
-    .card-analiz { background-color: #056f2a; }
+    .card-analysis { background-color: #056f2a; }
     .card-ml { background-color: #888282; }
-    .card-hakkinda { background-color: #3498db; }
+    .card-about { background-color: #3498db; }
 
     .card:hover {
         transform: scale(1.05);
@@ -64,10 +64,10 @@ st.markdown(
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.markdown('<a class="card card-analiz" href="/Analysis" target="_self">📊<br>Analysis</a>', unsafe_allow_html=True)
+    st.markdown('<a class="card card-analysis" href="/Analysis" target="_self">📊<br>Analysis</a>', unsafe_allow_html=True)
 
 with col2:
     st.markdown('<a class="card card-ml" href="/ML" target="_self">🤖<br>Machine Learning</a>', unsafe_allow_html=True)
 
 with col3:
-    st.markdown('<a class="card card-hakkinda" href="/About" target="_self">ℹ️<br>About</a>', unsafe_allow_html=True)
+    st.markdown('<a class="card card-about" href="/About" target="_self">ℹ️<br>About</a>', unsafe_allow_html=True)

@@ -12,8 +12,7 @@ from sklearn.tree import DecisionTreeClassifier, plot_tree
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, roc_curve, auc, mean_squared_error, r2_score
 from sklearn.multioutput import MultiOutputRegressor
 from utils import download_plot
-from models.utils import encode_features, predict_with_model
-
+from models.utils import encode_features
 
 
 def train_linear_regressor(df) -> None:
@@ -89,9 +88,7 @@ def train_linear_regressor(df) -> None:
         st.write(f"**MSE:** {mse:.4f}")
         st.write(f"**R²:** {r2:.4f}")
 
-# -------------------------
-# 3. Analysis Function
-# -------------------------
+
 def linear_regression_analysis() -> None:
     if "linreg_results" not in st.session_state:
         st.info("You must train the model first.")
@@ -136,11 +133,7 @@ def linear_regression_analysis() -> None:
         st.write("📄 Prediction and Actual Values Table")
         st.dataframe(combined)
 
-    predict_with_model("regression", results)
 
-# -------------------------
-# 4. Page Layout
-# -------------------------
 def linear_regression_page(df) -> None:
     st.title("Linear Regression")
     train_linear_regressor(df)
@@ -148,10 +141,6 @@ def linear_regression_page(df) -> None:
     linear_regression_analysis()
 
 
-
-# -------------------------
-# 1. Model training function
-# -------------------------
 def train_sgd_regressor(df) -> None:
     st.subheader("🔹 Model Settings")
 
@@ -265,17 +254,7 @@ def train_sgd_regressor(df) -> None:
             "target_names": target
         }
 
-        # Performance metrics
-        # st.success("✅ Model trained successfully!")
-        # mse = mean_squared_error(y_test, y_pred)
-        # r2 = r2_score(y_test, y_pred)
-        # st.write(f"**MSE:** {mse:.4f}")
-        # st.write(f"**R²:** {r2:.4f}")
 
-
-# -------------------------
-# 2. Analysis function
-# -------------------------
 def sgd_regression_analysis() -> None:
     if "sgd_results" not in st.session_state:
         st.info("You must train the model first.")
@@ -387,12 +366,7 @@ def sgd_regression_analysis() -> None:
         st.pyplot(fig)
         download_plot(fig, "learning_curve")
     
-    predict_with_model("regression", results)
 
-
-# -------------------------
-# 3. Page Layout
-# -------------------------
 def sgd_regression_page(df) -> None:
     st.title("SGD Regressor")
     train_sgd_regressor(df)

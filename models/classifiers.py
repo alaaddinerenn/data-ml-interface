@@ -11,7 +11,7 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler, MaxAbsScaler, La
 from sklearn.tree import DecisionTreeClassifier, plot_tree
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, roc_curve, auc, mean_squared_error, r2_score
 from utils import download_plot
-from models.utils import encode_features, predict_with_model
+from models.utils import encode_features
 from sklearn.ensemble import RandomForestClassifier
 import xgboost as xgb
 
@@ -285,8 +285,7 @@ def decision_tree_analysis() -> None:
         ax.grid(True)
         st.pyplot(fig)
         download_plot(fig, "learning_curve")
-    
-    predict_with_model("classification", results)
+
 
 def decision_tree_page(df) -> None:
     st.title("Decision Tree Classifier")
@@ -664,7 +663,6 @@ def knn_analysis() -> None:
         st.pyplot(fig)
         download_plot(fig, "learning_curve")
     
-    predict_with_model("classification", results)
 
 def knn_page(df) -> None:
     st.title("KNN Classifier")
@@ -893,7 +891,6 @@ def random_forest_analysis() -> None:
         st.pyplot(fig)
         download_plot(fig, "learning_curve")
     
-    predict_with_model("classification", results)
 
 def random_forest_page(df) -> None:
     st.title("Random Forest Classifier")
@@ -1142,7 +1139,6 @@ def xgboost_classifier_analysis() -> None:
         st.pyplot(fig)
         download_plot(fig, "learning_curve")
     
-    predict_with_model("classification", results)
 
 def xgboost_classifier_page(df) -> None:
     st.title("XGBoost Classifier")

@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from plotting import plot_features_in_rows, plot_classhist, plot_boxplot, plot_hist
 from utils import download_plot
 
+
 def show_stats(df=None) -> None:
     if df is None:
         if "df_clean" in st.session_state and not st.session_state.df_clean.empty:
