@@ -9,7 +9,7 @@ st.set_page_config(page_title="Data & ML Interface", page_icon="🤖", layout='w
 # Title at the top of the page (regardless of sidebar visibility)
 st.markdown(
     """
-    <h1 style="position: fixed; top: 40px; left: 20px; margin: 0; z-index: 999;">
+    <h1 style="text-align: center; font-size: 50px; margin: 10px 0 30px 0;">
         Data & ML Interface
     </h1>
     """,
