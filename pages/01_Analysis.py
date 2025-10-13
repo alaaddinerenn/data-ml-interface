@@ -3,7 +3,7 @@ from file import load_file
 from utils import compare, clean_data
 from stats import show_stats
 
-st.set_page_config(page_title="Analysis", page_icon="📊", layout='wide')
+st.set_page_config(page_title="Analysis", page_icon="📊")
 
 st.markdown(
     """
