@@ -96,8 +96,6 @@ def train_decision_tree(df) -> None:
             "unique_values": unique_values
         }
         
-        # st.success("✅ Decision Tree model trained successfully!")
-        # st.write(f"**Accuracy:** {accuracy_score(y_test, y_pred):.4f}")
 
 def decision_tree_analysis() -> None:
     if "dt_results" not in st.session_state:

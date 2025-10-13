@@ -21,7 +21,7 @@ st.write("\n\n\n\n\n")
 
 st.title("🤖 Machine Learning Page")
 
-# 📌 Always have the file upload option
+# Always have the file upload option
 df_uploaded = load_file()
 
 # If the user uploads a new file → use it and override ML data in the session
@@ -49,7 +49,7 @@ else:
 
 # If data exists
 if df is not None and not df.empty:
-    # 1️⃣ Select ML task type
+    # Select ML task type
     st.markdown(
             f"""
             <h2 style='text-align: center; font-size: 24px; font-weight: bold;'>
@@ -75,7 +75,7 @@ if df is not None and not df.empty:
             unsafe_allow_html=True
         )
 
-        # 2️⃣ Select algorithm (based on ML type)
+        # Select algorithm (based on ML type)
         if ml_type == "Regression":
             st.info("Regression: Used for predicting continuous values.")
             model_choice = st.selectbox(
@@ -124,4 +124,4 @@ if df is not None and not df.empty:
                 st.markdown("<span style='font-size:18px; font-weight:bold;'>Divides data points into k clusters.</span>", unsafe_allow_html=True)
                 kmeans_page(df)
 else:
-    st.info("📌 Please upload a dataset or send one from the analysis page.")
+    st.info("Please upload a dataset or send one from the analysis page.")
