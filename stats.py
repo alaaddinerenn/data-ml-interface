@@ -163,36 +163,33 @@ class StatisticsDisplay:
         
         class_counts = df[target_col].value_counts()
         
-        col1, col2 = st.columns([1, 1])
         
-        with col1:
-            st.dataframe(class_counts.to_frame("Count"))
+        st.dataframe(class_counts.to_frame("Count"))
+    
+        fig, ax = plt.subplots(figsize=(8, 8))
         
-        with col2:
-            fig, ax = plt.subplots(figsize=(8, 8))
-            
-            def autopct_format(pct, allvals):
-                absolute = int(round(pct/100.*sum(allvals)))
-                return f"{absolute}\n({pct:.1f}%)"
-            
-            wedges, texts, autotexts = ax.pie(
-                class_counts,
-                labels=class_counts.index,
-                autopct=lambda pct: autopct_format(pct, class_counts),
-                startangle=90,
-                colors=sns.color_palette("Set2", len(class_counts))
-            )
-            
-            for autotext in autotexts:
-                autotext.set_color('white')
-                autotext.set_fontweight('bold')
-            
-            ax.set_title(title, fontsize=14, fontweight='bold')
-            ax.axis("equal")
-            
-            st.pyplot(fig)
-            DownloadManager.download_plot(fig, "pie_chart")
-            plt.close(fig)
+        def autopct_format(pct, allvals):
+            absolute = int(round(pct/100.*sum(allvals)))
+            return f"{absolute}\n({pct:.1f}%)"
+        
+        wedges, texts, autotexts = ax.pie(
+            class_counts,
+            labels=class_counts.index,
+            autopct=lambda pct: autopct_format(pct, class_counts),
+            startangle=90,
+            colors=sns.color_palette("Set2", len(class_counts))
+        )
+        
+        for autotext in autotexts:
+            autotext.set_color('white')
+            autotext.set_fontweight('bold')
+        
+        ax.set_title(title, fontsize=14, fontweight='bold')
+        ax.axis("equal")
+        
+        st.pyplot(fig)
+        DownloadManager.download_plot(fig, "pie_chart")
+        plt.close(fig)
     
     @staticmethod
     def _show_statistical_summary(df: pd.DataFrame) -> None:
