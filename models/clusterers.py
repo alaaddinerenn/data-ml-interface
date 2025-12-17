@@ -155,9 +155,9 @@ class DBSCANModel(BaseClusterer):
         if "Noise Analysis" in options:
             import matplotlib.pyplot as plt
             import numpy as np
-            from utils import download_plot
+            from utils import DownloadManager
             
-            st.write("🔍 **Noise Points Analysis**")
+            st.markdown("### 🔍 **Noise Points Analysis**")
             
             labels = results["labels"]
             n_noise = list(labels).count(-1)
@@ -173,7 +173,7 @@ class DBSCANModel(BaseClusterer):
                 ax.text(i, v + 5, str(v), ha='center', va='bottom', fontweight='bold')
             
             st.pyplot(fig)
-            download_plot(fig, "noise_analysis")
+            DownloadManager.download_plot(fig, "noise_analysis")
             plt.close(fig)
 
 
@@ -201,21 +201,21 @@ class AgglomerativeModel(BaseClusterer):
             key=f"{self.session_key}_linkage"
         )
         
-        affinity = st.selectbox(
-            "Affinity (Distance Metric)",
+        metric = st.selectbox(
+            "Distance Metric",
             ["euclidean", "manhattan", "cosine"],
-            key=f"{self.session_key}_affinity"
+            key=f"{self.session_key}_metric"
         )
         
         # Ward linkage only works with euclidean
-        if linkage == "ward" and affinity != "euclidean":
-            st.warning("⚠ Ward linkage requires Euclidean affinity. Automatically set to Euclidean.")
-            affinity = "euclidean"
+        if linkage == "ward" and metric != "euclidean":
+            st.warning("⚠ Ward linkage requires Euclidean metric. Automatically set to Euclidean.")
+            metric = "euclidean"
         
         return {
             'n_clusters': n_clusters,
             'linkage': linkage,
-            'affinity': affinity
+            'metric': metric
         }
     
     def create_model(self, params: Dict[str, Any]):
@@ -241,10 +241,10 @@ class AgglomerativeModel(BaseClusterer):
         if "Dendrogram" in options:
             import matplotlib.pyplot as plt
             from scipy.cluster.hierarchy import dendrogram, linkage
-            from utils import download_plot
-            
-            st.write("🌳 **Dendrogram**")
-            
+            from utils import DownloadManager
+
+            st.markdown("### 🌳 **Dendrogram**")
+
             # Perform hierarchical clustering
             Z = linkage(results["X"], method=results["model_params"]["linkage"])
             
@@ -256,7 +256,7 @@ class AgglomerativeModel(BaseClusterer):
                         fontsize=14, fontweight='bold')
             
             st.pyplot(fig)
-            download_plot(fig, "dendrogram")
+            DownloadManager.download_plot(fig, "dendrogram")
             plt.close(fig)
 
 
