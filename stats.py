@@ -222,7 +222,7 @@ class StatisticsDisplay:
         selected_features = st.multiselect(
             "Select features to visualize",
             options=features,
-            default=features[:min(4, len(features))],
+            default=features[:min(2, len(features))],
             key="viz_features"
         )
         
@@ -238,7 +238,7 @@ class StatisticsDisplay:
         with col2:
             show_class_hist = st.checkbox("🎨 Histogram by Class", value=True)
         with col3:
-            show_box = st.checkbox("📦 Boxplot", value=True)
+            show_box = st.checkbox("📦 Boxplot", value=False)
         with col4:
             show_scatter = st.checkbox("🔵 Scatter Plot", value=False)
         

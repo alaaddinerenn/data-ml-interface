@@ -4,7 +4,7 @@ from typing import Dict, Any, List
 from sklearn.cluster import KMeans, DBSCAN, AgglomerativeClustering
 from sklearn.preprocessing import StandardScaler
 
-from models.base_clusterer import BaseClusterer
+from .base import BaseClusterer
 
 
 # ============================================

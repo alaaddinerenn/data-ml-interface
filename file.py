@@ -49,7 +49,7 @@ class FileManager:
         """Clear file-related session state."""
         keys_to_clear = [
             "df", "df_clean", "cleaned", "already_cleaned",
-            "file_name", "df_for_ml_clean", "df_for_ml_raw"
+            "file_name"
         ]
         for key in keys_to_clear:
             if key in st.session_state:

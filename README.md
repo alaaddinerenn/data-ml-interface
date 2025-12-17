@@ -50,16 +50,19 @@ A **Streamlit** application designed to empower non-programmers to explore datas
 
 ```
 data-ml-interface/
-├── Home_Page.py                    # Main page
+├── Home_Page.py                    # Main entry point
 ├── pages/                          # Streamlit pages
-│   ├── 01_Analysis.py             
-│   ├── 02_ML.py                   
-│   └── 03_About.py                
-├── models/                         # ML models (OOP architecture)
+│   ├── 01_Analysis.py             # Data analysis page
+│   ├── 02_ML.py                   # Machine learning page
+│   └── 03_About.py                # About page
+│
+├── models/                         # ML models
 │   ├── __init__.py                # Public API exports
-│   ├── base_classifier.py         # Base class for classifiers
-│   ├── base_regressor.py          # Base class for regressors
-│   ├── base_clusterer.py          # Base class for clusterers
+│   ├── base/                      # Base classes
+│   │   ├── __init__.py
+│   │   ├── base_classifier.py     
+│   │   ├── base_regressor.py      
+│   │   └── base_clusterer.py      
 │   ├── classifiers.py             # Decision Tree, KNN, Random Forest, XGBoost
 │   ├── regressors.py              # Linear Regression, SGD Regressor
 │   ├── clusterers.py              # K-Means, DBSCAN, Agglomerative
@@ -67,18 +70,21 @@ data-ml-interface/
 │   ├── regression_utils.py        # Regression analysis tools
 │   ├── clustering_utils.py        # Clustering analysis tools
 │   └── utils.py                   # Model utilities
-├── utils.py                        # Core utilities 
-├── plotting.py                     # Visualization utilities
-├── stats.py                        # Statistical analysis 
-├── file.py                         # File management (FileManager class)
+│
+├── utils.py                        # Core utilities
+├── plotting.py                     # Visualization utilities (PlottingTools)
+├── stats.py                        # Statistical analysis
+├── file.py                         # File management
 ├── README.md                       # Project documentation
 └── requirements.txt                # Python dependencies
 ```
 
 **Architecture**: Object-Oriented Programming (OOP) with SOLID principles
-- Each utility is organized into dedicated classes with clear responsibilities
-- Base classes for ML models enable easy extension and maintenance
-- Clean separation between data processing, visualization, and ML logic
+- **Core Utilities**: DownloadManager, DataCleaner, DataComparator, FeatureEncoder in `utils.py`
+- **Visualization**: PlottingTools in `plotting.py`, StatisticsDisplay in `stats.py`
+- **File Management**: FileManager class for handling data uploads
+- **ML Models**: Base classes enable easy extension, each model type in dedicated files
+- **Clean Separation**: Data processing, visualization, and ML logic are clearly separated
 
 ---
 
@@ -94,7 +100,7 @@ data-ml-interface/
 
 ## Future Enhancements
 
-- Add support for additional file formats (e.g., JSON, Parquet).
+- Add support for additional file formats (e.g., JSON).
 - Implement advanced machine learning algorithms (e.g., Neural Networks, SVMs).
 - Enhance visualization options with interactive plots.
 - Add automated hyperparameter tuning for models.
