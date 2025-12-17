@@ -140,7 +140,7 @@ class RegressionAnalysisTools:
                 ax.grid(True, alpha=0.3)
                 
                 st.pyplot(fig)
-                download_plot(fig, f"error_distribution_{col}")
+                DownloadManager.download_plot(fig, f"error_distribution_{col}")
                 plt.close(fig)
     
     @staticmethod
