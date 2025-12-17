@@ -80,10 +80,6 @@ elif 'df_for_ml_raw' in st.session_state and st.session_state.df_for_ml_raw is n
         memory_usage = df.memory_usage(deep=True).sum() / 1024**2
         st.metric("Size", f"{memory_usage:.2f} MB")
     
-    # Show preview
-    with st.expander("📊 Preview Data", expanded=False):
-        st.dataframe(df.head())
-    
     # Option to load new data
     st.markdown("---")
     if st.checkbox("📁 Load a different dataset instead", value=False):
@@ -104,6 +100,17 @@ if not data_from_analysis:
 
 # If data exists
 if df is not None and not df.empty:
+    st.markdown("---")
+    st.markdown(
+        """
+        <h2 style='text-align: center; font-size: 24px; font-weight: bold;'>
+            Dataset Overview
+        </h2>
+        """,
+        unsafe_allow_html=True
+    )
+    st.write(st.session_state.df)
+
     st.markdown("---")
     # Select ML task type
     st.markdown(

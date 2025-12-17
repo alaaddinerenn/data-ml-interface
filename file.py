@@ -30,9 +30,20 @@ class FileManager:
         
         # New file or first upload
         if FileManager._is_new_file(uploaded_file):
+            # Check if we're replacing an existing file
+            was_existing_file = 'file_name' in st.session_state
+            
+            # Clear session state for new file 
+            FileManager._clear_session_state()
+            
+            # Process new file
             df = FileManager._process_file(uploaded_file)
             if df is not None:
                 FileManager._store_in_session(uploaded_file.name, df)
+                
+                # Rerun to clear old visualizations
+                if was_existing_file:
+                    st.rerun()
             return df
         
         # Return existing DataFrame from session
@@ -47,13 +58,16 @@ class FileManager:
     @staticmethod
     def _clear_session_state() -> None:
         """Clear file-related session state."""
-        keys_to_clear = [
-            "df", "df_clean", "cleaned", "already_cleaned",
-            "file_name"
+        # Tüm session state'i temizle (sadece belirli anahtarları değil)
+        keys_to_keep = {'_streamlit_version'}  # Streamlit'in iç anahtarları
+        
+        keys_to_delete = [
+            key for key in st.session_state.keys() 
+            if key not in keys_to_keep
         ]
-        for key in keys_to_clear:
-            if key in st.session_state:
-                del st.session_state[key]
+        
+        for key in keys_to_delete:
+            del st.session_state[key]
     
     @staticmethod
     def _process_file(uploaded_file) -> Optional[pd.DataFrame]:
