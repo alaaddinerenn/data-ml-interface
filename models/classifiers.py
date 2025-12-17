@@ -864,7 +864,7 @@ def random_forest_analysis() -> None:
             y = le.fit_transform(y)
         else:
             y = y.astype(int)
-        from sklearn.model_selection import learning_curve
+
         train_sizes, train_scores, val_scores = learning_curve(
             estimator=results["model"],
             X=X,
@@ -1112,7 +1112,7 @@ def xgboost_classifier_analysis() -> None:
             y = le.fit_transform(y)
         else:
             y = y.astype(int)
-        from sklearn.model_selection import learning_curve
+
         train_sizes, train_scores, val_scores = learning_curve(
             estimator=results["model"],
             X=X,
