@@ -34,33 +34,77 @@ st.markdown(
 st.write("\n\n\n\n\n")
 st.title("🤖 Machine Learning Page")
 
-# File upload option
-df_uploaded = FileManager.load_file()
+# Check if data is sent from Analysis page
+data_from_analysis = False
+df = None
 
-# Determine which data to use
-if df_uploaded is not None:
-    df = df_uploaded
-    # Reset data from analysis page
-    st.session_state.df_for_ml_clean = None
-    st.session_state.df_for_ml_raw = None
-    st.write("📂 Data loaded from file:")
-    st.dataframe(df)
-
-elif 'df_for_ml_clean' in st.session_state and st.session_state.df_for_ml_clean is not None:
+if 'df_for_ml_clean' in st.session_state and st.session_state.df_for_ml_clean is not None:
     df = st.session_state.df_for_ml_clean
-    st.write("✅ Cleaned data loaded (from analysis page):")
-    st.dataframe(df)
+    data_from_analysis = True
+    st.success("✅ Cleaned data loaded from Analysis page")
+    
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Rows", df.shape[0])
+    with col2:
+        st.metric("Columns", df.shape[1])
+    with col3:
+        memory_usage = df.memory_usage(deep=True).sum() / 1024**2
+        st.metric("Size", f"{memory_usage:.2f} MB")
+    
+    # Show preview
+    with st.expander("📊 Preview Data", expanded=False):
+        st.dataframe(df.head())
+    
+    # Option to load new data
+    st.markdown("---")
+    if st.checkbox("📁 Load a different dataset instead", value=False):
+        # Clear analysis data from session
+        if 'df_for_ml_clean' in st.session_state:
+            del st.session_state.df_for_ml_clean
+        if 'df_for_ml_raw' in st.session_state:
+            del st.session_state.df_for_ml_raw
+        st.rerun()
 
 elif 'df_for_ml_raw' in st.session_state and st.session_state.df_for_ml_raw is not None:
     df = st.session_state.df_for_ml_raw
-    st.write("✅ Raw data loaded (from analysis page):")
-    st.dataframe(df)
+    data_from_analysis = True
+    st.success("✅ Raw data loaded from Analysis page")
+    
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Rows", df.shape[0])
+    with col2:
+        st.metric("Columns", df.shape[1])
+    with col3:
+        memory_usage = df.memory_usage(deep=True).sum() / 1024**2
+        st.metric("Size", f"{memory_usage:.2f} MB")
+    
+    # Show preview
+    with st.expander("📊 Preview Data", expanded=False):
+        st.dataframe(df.head())
+    
+    # Option to load new data
+    st.markdown("---")
+    if st.checkbox("📁 Load a different dataset instead", value=False):
+        # Clear analysis data from session
+        if 'df_for_ml_clean' in st.session_state:
+            del st.session_state.df_for_ml_clean
+        if 'df_for_ml_raw' in st.session_state:
+            del st.session_state.df_for_ml_raw
+        st.rerun()
 
-else:
-    df = None
+# If no data from analysis, show file uploader
+if not data_from_analysis:
+    st.info("📤 Upload a dataset to get started with machine learning")
+    df_uploaded = FileManager.load_file()
+    
+    if df_uploaded is not None:
+        df = df_uploaded
 
 # If data exists
 if df is not None and not df.empty:
+    st.markdown("---")
     # Select ML task type
     st.markdown(
         """
