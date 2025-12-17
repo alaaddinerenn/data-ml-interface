@@ -5,7 +5,7 @@ from sklearn.linear_model import LinearRegression, SGDRegressor
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, MaxAbsScaler
 from sklearn.multioutput import MultiOutputRegressor
 
-from models.base_regressor import BaseRegressor
+from .base import BaseRegressor
 
 
 # ============================================

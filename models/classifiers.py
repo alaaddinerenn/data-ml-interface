@@ -16,7 +16,7 @@ from sklearn.preprocessing import (
 from sklearn.model_selection import GridSearchCV
 import xgboost as xgb
 
-from models.base_classifier import BaseClassifier
+from .base import BaseClassifier
 from utils import DownloadManager
 
 
@@ -331,8 +331,8 @@ class RandomForestModel(BaseClassifier):
     ) -> None:
         """Show Random Forest specific visualizations."""
         if "Feature Importance" in options:
-            st.write("📊 **Feature Importance**")
-            
+            st.markdown("### 📊 **Feature Importance**")
+
             importances = results["model"].feature_importances_
             fi_df = pd.DataFrame({
                 "Feature": results["features"],
@@ -506,8 +506,8 @@ class XGBoostModel(BaseClassifier):
     ) -> None:
         """Show XGBoost specific visualizations."""
         if "Feature Importance" in options:
-            st.write("📊 **Feature Importance (XGBoost)**")
-            
+            st.markdown("### 📊 **Feature Importance (XGBoost)**")
+
             booster = results["model"].get_booster()
             
             for importance_type in ["weight", "gain", "cover"]:
