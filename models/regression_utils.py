@@ -6,7 +6,7 @@ import seaborn as sns
 from typing import Optional, List
 from sklearn.model_selection import learning_curve
 
-from utils import download_plot
+from utils import DownloadManager
 
 
 class RegressionAnalysisTools:
@@ -39,7 +39,7 @@ class RegressionAnalysisTools:
             ax.grid(True, alpha=0.3)
             
             st.pyplot(fig)
-            download_plot(fig, "actual_vs_predicted")
+            DownloadManager.download_plot(fig, "actual_vs_predicted")
             plt.close(fig)
         else:
             # Multi-output: separate plot for each target
@@ -57,7 +57,7 @@ class RegressionAnalysisTools:
                 ax.grid(True, alpha=0.3)
                 
                 st.pyplot(fig)
-                download_plot(fig, f"actual_vs_predicted_{col}")
+                DownloadManager.download_plot(fig, f"actual_vs_predicted_{col}")
                 plt.close(fig)
     
     @staticmethod
@@ -83,7 +83,7 @@ class RegressionAnalysisTools:
             ax.grid(True, alpha=0.3)
             
             st.pyplot(fig)
-            download_plot(fig, "residual_plot")
+            DownloadManager.download_plot(fig, "residual_plot")
             plt.close(fig)
         else:
             for i, col in enumerate(target_names):
@@ -98,7 +98,7 @@ class RegressionAnalysisTools:
                 ax.grid(True, alpha=0.3)
                 
                 st.pyplot(fig)
-                download_plot(fig, f"residual_plot_{col}")
+                DownloadManager.download_plot(fig, f"residual_plot_{col}")
                 plt.close(fig)
     
     @staticmethod
@@ -125,7 +125,7 @@ class RegressionAnalysisTools:
             ax.grid(True, alpha=0.3)
             
             st.pyplot(fig)
-            download_plot(fig, "error_distribution")
+            DownloadManager.download_plot(fig, "error_distribution")
             plt.close(fig)
         else:
             for i, col in enumerate(target_names):
@@ -204,5 +204,5 @@ class RegressionAnalysisTools:
         ax.grid(True, alpha=0.3)
         
         st.pyplot(fig)
-        download_plot(fig, "learning_curve")
+        DownloadManager.download_plot(fig, "learning_curve")
         plt.close(fig)

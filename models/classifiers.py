@@ -17,7 +17,7 @@ from sklearn.model_selection import GridSearchCV
 import xgboost as xgb
 
 from models.base_classifier import BaseClassifier
-from utils import download_plot
+from utils import DownloadManager
 
 
 # ============================================
@@ -86,7 +86,7 @@ class DecisionTreeModel(BaseClassifier):
             )
             
             st.pyplot(fig)
-            download_plot(fig, "decision_tree")
+            DownloadManager.download_plot(fig, "decision_tree")
             plt.close(fig)
 
 
@@ -353,7 +353,7 @@ class RandomForestModel(BaseClassifier):
             ax.set_title("Feature Importances (Random Forest)")
             
             st.pyplot(fig)
-            download_plot(fig, "feature_importance")
+            DownloadManager.download_plot(fig, "feature_importance")
             plt.close(fig)
             
             # DataFrame
@@ -536,7 +536,7 @@ class XGBoostModel(BaseClassifier):
                 ax.set_title(f"Feature Importances ({importance_type.upper()})")
                 
                 st.pyplot(fig)
-                download_plot(fig, f"xgb_feature_importance_{importance_type}")
+                DownloadManager.download_plot(fig, f"xgb_feature_importance_{importance_type}")
                 plt.close(fig)
                 
                 # DataFrame

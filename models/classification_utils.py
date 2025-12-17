@@ -14,7 +14,7 @@ from sklearn.model_selection import learning_curve
 from sklearn.preprocessing import LabelEncoder
 from mlxtend.plotting import plot_decision_regions
 
-from utils import download_plot
+from utils import DownloadManager
 
 
 class AnalysisTools:
@@ -80,7 +80,7 @@ class AnalysisTools:
         ax.set_title("Confusion Matrix")
         
         st.pyplot(fig)
-        download_plot(fig, f"{key_prefix}_confusion_matrix")
+        DownloadManager.download_plot(fig, f"{key_prefix}_confusion_matrix")
         plt.close(fig)
     
     @staticmethod
@@ -142,7 +142,7 @@ class AnalysisTools:
             ax.grid(True, alpha=0.3)
             
             st.pyplot(fig)
-            download_plot(fig, f"{key_prefix}_roc_curve")
+            DownloadManager.download_plot(fig, f"{key_prefix}_roc_curve")
             plt.close(fig)
         
         # Multiclass classification
@@ -192,7 +192,7 @@ class AnalysisTools:
             ax.grid(True, alpha=0.3)
             
             st.pyplot(fig)
-            download_plot(fig, f"{key_prefix}_roc_curve")
+            DownloadManager.download_plot(fig, f"{key_prefix}_roc_curve")
             plt.close(fig)
     
     @staticmethod
@@ -255,7 +255,7 @@ class AnalysisTools:
         ax_train.set_title("Decision Regions - Training Data")
         
         st.pyplot(fig_train)
-        download_plot(fig_train, f"{key_prefix}_decision_regions_train")
+        DownloadManager.download_plot(fig_train, f"{key_prefix}_decision_regions_train")
         plt.close(fig_train)
         
         # --- Test Data ---
@@ -276,7 +276,7 @@ class AnalysisTools:
         ax_test.set_title("Decision Regions - Test Data")
         
         st.pyplot(fig_test)
-        download_plot(fig_test, f"{key_prefix}_decision_regions_test")
+        DownloadManager.download_plot(fig_test, f"{key_prefix}_decision_regions_test")
         plt.close(fig_test)
     
     @staticmethod
@@ -332,5 +332,5 @@ class AnalysisTools:
         ax.grid(True, alpha=0.3)
         
         st.pyplot(fig)
-        download_plot(fig, "learning_curve")
+        DownloadManager.download_plot(fig, "learning_curve")
         plt.close(fig)

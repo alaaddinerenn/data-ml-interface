@@ -9,7 +9,7 @@ from sklearn.cluster import KMeans
 from matplotlib.colors import ListedColormap
 from typing import List
 
-from utils import download_plot
+from utils import DownloadManager
 
 
 class ClusteringAnalysisTools:
@@ -67,7 +67,7 @@ class ClusteringAnalysisTools:
         ax.axis("equal")
         
         st.pyplot(fig)
-        download_plot(fig, "cluster_distribution_pie")
+        DownloadManager.download_plot(fig, "cluster_distribution_pie")
         plt.close(fig)
     
     @staticmethod
@@ -139,7 +139,7 @@ class ClusteringAnalysisTools:
         ax.grid(True, alpha=0.3)
         
         st.pyplot(fig)
-        download_plot(fig, "silhouette_plot")
+        DownloadManager.download_plot(fig, "silhouette_plot")
         plt.close(fig)
         
         # K vs Silhouette Score (if using KMeans-like algorithm)
@@ -168,7 +168,7 @@ class ClusteringAnalysisTools:
         ax2.legend()
         
         st.pyplot(fig2)
-        download_plot(fig2, "k_vs_silhouette_score")
+        DownloadManager.download_plot(fig2, "k_vs_silhouette_score")
         plt.close(fig2)
     
     @staticmethod
@@ -221,7 +221,7 @@ class ClusteringAnalysisTools:
         cbar.set_label('Cluster', fontsize=12)
         
         st.pyplot(fig)
-        download_plot(fig, "pca_clusters")
+        DownloadManager.download_plot(fig, "pca_clusters")
         plt.close(fig)
         
         # Show explained variance
@@ -283,7 +283,7 @@ class ClusteringAnalysisTools:
             ax.grid(True, alpha=0.3, axis='y')
             
             st.pyplot(fig)
-            download_plot(fig, f"boxplot_{feature}")
+            DownloadManager.download_plot(fig, f"boxplot_{feature}")
             plt.close(fig)
     
     @staticmethod
@@ -318,7 +318,7 @@ class ClusteringAnalysisTools:
         ax.grid(True, alpha=0.3)
         
         st.pyplot(fig)
-        download_plot(fig, "elbow_curve")
+        DownloadManager.download_plot(fig, "elbow_curve")
         plt.close(fig)
         
         # Show inertia values in table

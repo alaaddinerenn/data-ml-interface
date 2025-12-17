@@ -1,5 +1,5 @@
 import streamlit as st
-from file import load_file
+from file import FileManager
 
 # Yeni OOP yapısından importlar
 from models import (
@@ -35,7 +35,7 @@ st.write("\n\n\n\n\n")
 st.title("🤖 Machine Learning Page")
 
 # File upload option
-df_uploaded = load_file()
+df_uploaded = FileManager.load_file()
 
 # Determine which data to use
 if df_uploaded is not None:

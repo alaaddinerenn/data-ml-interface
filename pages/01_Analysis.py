@@ -1,7 +1,7 @@
 import streamlit as st
-from file import load_file
-from utils import compare, clean_data
-from stats import show_stats
+from file import FileManager
+from utils import DataComparator, DataCleaner
+from stats import StatisticsDisplay
 
 st.set_page_config(page_title="Analysis", page_icon="📊")
 
@@ -23,16 +23,16 @@ if 'cleaned' not in st.session_state:
     st.session_state.cleaned = False
 
 # File upload
-load_file()
+FileManager.load_file()
 
 # Main analysis flow
 if "df" in st.session_state and not st.session_state.df.empty:
     # Show initial statistics
-    show_stats()
+    StatisticsDisplay.show_stats()
 
     # Data cleaning workflow
     if not st.session_state.cleaned:
-        df_clean, st.session_state.cleaned, st.session_state.already_cleaned = clean_data(
+        df_clean, st.session_state.cleaned, st.session_state.already_cleaned = DataCleaner.clean_data(
             st.session_state.df
         )
         st.session_state.df_clean = df_clean
@@ -48,10 +48,10 @@ if "df" in st.session_state and not st.session_state.df.empty:
     if st.session_state.cleaned:
         if not st.session_state.already_cleaned:
             # Show statistics after cleaning
-            show_stats()
+            StatisticsDisplay.show_stats()
             
             # Compare before/after
-            compare(st.session_state.df, st.session_state.df_clean)
+            DataComparator.compare(st.session_state.df, st.session_state.df_clean)
 
             # Send data to ML page options
             st.markdown("---")
