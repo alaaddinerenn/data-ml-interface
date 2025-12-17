@@ -1,197 +1,282 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-from sklearn.cluster import KMeans
-from sklearn.decomposition import PCA
-from sklearn.metrics import silhouette_score, silhouette_samples
+from typing import Dict, Any, List
+from sklearn.cluster import KMeans, DBSCAN, AgglomerativeClustering
 from sklearn.preprocessing import StandardScaler
-from utils import download_plot
-from models.utils import encode_features
+
+from models.base_clusterer import BaseClusterer
 
 
-def train_kmeans(df) -> None:
-    st.subheader("🔹 KMeans Settings")
+# ============================================
+# KMEANS CLUSTERING
+# ============================================
 
-    # Select features to use for clustering
-    features = st.multiselect(
-        "Select features for clustering",
-        options=df.columns,
-        default=[col for col in df.columns if col != "cluster"]
-    )
-
-    n_clusters = st.slider("Number of Clusters (k)", 2, 10, 3)
-    encoding_type = st.radio("Encoding Type", ["One-Hot Encoding", "Label Encoding"])
-    scale_data = st.checkbox("Scale data (StandardScaler)", value=True)
-    random_seed = st.number_input("Random Seed", value=42)
-
-    if st.button("Train Model", key="btn_train_kmeans"):
-        if not features:
-            st.warning("You must select at least one feature.")
-            return
-
-        # Encoding
-        df_encoded = encode_features(df, encoding_type)
-
-        # X matrix
-        X = df_encoded[features]
-
-        # Optional scaling
-        if scale_data:
-            scaler = StandardScaler()
-            X = scaler.fit_transform(X)
-        else:
-            X = X.values
-
-        # Model
-        model = KMeans(n_clusters=n_clusters, random_state=random_seed, n_init=10)
-        y_pred = model.fit_predict(X)
-
-        # Save to session
-        st.session_state["kmeans_results"] = {
-            "model": model,
-            "X": X,
-            "y_pred": y_pred,
-            "features": features,
-            "scaled": scale_data
-        }
-
-        st.success("✅ KMeans model trained successfully!")
-
-
-def kmeans_analysis() -> None:
-    if "kmeans_results" not in st.session_state:
-        st.warning("⚠ You must train the model first.")
-        return
-
-    results = st.session_state["kmeans_results"]
-    model = results["model"]
-    X = results["X"]
-    y_pred = results["y_pred"]
-
-    st.subheader("📊 Analysis Tools")
-    analysis_options = st.multiselect(
-        "Select analyses to visualize",
-        ["Cluster Distribution", "Silhouette Score", "PCA 2D Plot", "Elbow Curve"],
-        default=["Cluster Distribution"]
-    )
-
-    if "Cluster Distribution" in analysis_options:
-        st.write("🔹 Cluster Distribution")
-        unique, counts = np.unique(y_pred, return_counts=True)
-        dist_df = pd.DataFrame({"Cluster": unique, "Count": counts})
-        st.dataframe(dist_df)
-
-        fig, ax = plt.subplots()
-
-        # Display both count and percentage in pie chart
-        def func(pct, allvals):
-            absolute = int(round(pct/100.*sum(allvals)))
-            return f"{absolute} ({pct:.1f}%)"
-
-        pie_colors = ["#1E90FF", "#32CD32", "#FFA500"]
-        wedges, texts, autotexts = ax.pie(
-            counts,
-            labels=unique,
-            autopct=lambda pct: func(pct, counts),
-            startangle=90,
-            colors=pie_colors[:len(unique)]
+class KMeansModel(BaseClusterer):
+    """KMeans Clustering implementation."""
+    
+    def __init__(self):
+        super().__init__("KMeans Clustering", "kmeans_results")
+    
+    def get_model_params(self) -> Dict[str, Any]:
+        """Get KMeans specific parameters."""
+        n_clusters = st.slider(
+            "Number of Clusters (k)",
+            2, 10, 3,
+            key=f"{self.session_key}_n_clusters"
         )
-
-        ax.axis("equal")  # Equal aspect ratio for the pie chart
-        st.pyplot(fig)
-        download_plot(fig, "cluster_distribution_pie")
-
-        # Boxplot for features by cluster
-        st.subheader("🔹 Boxplot of Features by Cluster")
-        from plotting import plot_boxplot
-        features = results["features"]
-        df_box = pd.DataFrame(X, columns=features)
-        df_box["cluster"] = y_pred
-        box_colors = ["#1E90FF", "#32CD32", "#FFA500"]
-        for feature in features:
-            plot_boxplot(feature, df_box, hue="cluster", palette=box_colors)
-
-    if "Silhouette Score" in analysis_options:
-        score = silhouette_score(X, y_pred)
-        st.subheader(f"🔹 **Silhouette Score:** {score:.4f}")
-        # Silhouette Plot
-        sample_scores = silhouette_samples(X, y_pred)
-        n_clusters = len(np.unique(y_pred))
-        sil_colors = ["#1E90FF", "#32CD32", "#FFA500"]
-        fig, ax = plt.subplots(figsize=(8, 5))
-        y_lower = 10
-        for i in range(n_clusters):
-            ith_cluster_silhouette_values = sample_scores[y_pred == i]
-            ith_cluster_silhouette_values.sort()
-            size_cluster_i = ith_cluster_silhouette_values.shape[0]
-            y_upper = y_lower + size_cluster_i
-            color = sil_colors[i % len(sil_colors)]
-            ax.fill_betweenx(np.arange(y_lower, y_upper), 0, ith_cluster_silhouette_values,
-                             facecolor=color, edgecolor=color, alpha=0.7)
-            ax.text(-0.05, y_lower + 0.5 * size_cluster_i, str(i))
-            y_lower = y_upper + 10  # 10 for spacing between clusters
-        ax.axvline(score, color="red", linestyle="--", label="Average Silhouette")
-        ax.set_xlabel("Silhouette Coefficient Values")
-        ax.set_ylabel("Sample Index")
-        ax.set_title("Silhouette Plot for Each Cluster")
-        ax.legend()
-        st.pyplot(fig)
-        download_plot(fig, "silhouette_plot")
-
-        # k vs silhouette score plot
-        st.subheader("🔹 k vs Silhouette Score")
-        k_range = range(2, 11)
-        sil_scores = []
-        for k in k_range:
-            km = KMeans(n_clusters=k, random_state=42, n_init=10)
-            labels = km.fit_predict(X)
-            sil_scores.append(silhouette_score(X, labels))
-        fig2, ax2 = plt.subplots()
-        ax2.plot(k_range, sil_scores, marker="o")
-        ax2.set_xlabel("Number of Clusters (k)")
-        ax2.set_ylabel("Average Silhouette Score")
-        ax2.set_title("k vs Silhouette Score")
-        st.pyplot(fig2)
-        download_plot(fig2, "k_vs_silhouette_score")
-
-    if "PCA 2D Plot" in analysis_options:
-        st.subheader("🔹 PCA 2D Cluster Visualization")
-        from matplotlib.colors import ListedColormap
-        pca = PCA(n_components=2)
-        X_pca = pca.fit_transform(X)
-        fig, ax = plt.subplots()
-        pca_colors = ["#1E90FF", "#32CD32", "#FFA500"]
-        cmap = ListedColormap(pca_colors[:len(np.unique(y_pred))])
-        scatter = ax.scatter(X_pca[:, 0], X_pca[:, 1], c=y_pred, cmap=cmap, s=30)
-        ax.set_xlabel("PCA1")
-        ax.set_ylabel("PCA2")
-        ax.set_title("Clusters (PCA 2D)")
-        plt.colorbar(scatter, ax=ax)
-        st.pyplot(fig)
-        download_plot(fig, "pca_clusters")
-
-    if "Elbow Curve" in analysis_options:
-        st.subheader("🔹 Elbow Method")
-        distortions = []
-        K = range(2, 11)
-        for k in K:
-            km = KMeans(n_clusters=k, random_state=42, n_init=10)
-            km.fit(X)
-            distortions.append(km.inertia_)
-
-        fig, ax = plt.subplots()
-        ax.plot(K, distortions, "bo-")
-        ax.set_xlabel("k")
-        ax.set_ylabel("Inertia")
-        ax.set_title("Elbow Curve")
-        st.pyplot(fig)
-        download_plot(fig, "elbow_curve")
+        
+        n_init = st.number_input(
+            "Number of Initializations",
+            min_value=1,
+            max_value=50,
+            value=10,
+            help="Number of times the k-means algorithm will run with different centroid seeds",
+            key=f"{self.session_key}_n_init"
+        )
+        
+        max_iter = st.number_input(
+            "Max Iterations",
+            min_value=100,
+            max_value=1000,
+            value=300,
+            step=50,
+            key=f"{self.session_key}_max_iter"
+        )
+        
+        return {
+            'n_clusters': n_clusters,
+            'n_init': int(n_init),
+            'max_iter': int(max_iter),
+            'random_state': 42
+        }
+    
+    def create_model(self, params: Dict[str, Any]):
+        """Create KMeans model."""
+        return KMeans(**params)
+    
+    def get_analysis_options(self) -> List[str]:
+        """Get available analysis options."""
+        return [
+            "Cluster Distribution",
+            "Silhouette Analysis",
+            "PCA 2D Plot",
+            "Feature Boxplots",
+            "Elbow Curve"
+        ]
+    
+    def show_model_specific_analysis(
+        self,
+        results: Dict,
+        options: List[str]
+    ) -> None:
+        """Show KMeans specific visualizations."""
+        if "Elbow Curve" in options:
+            self.analysis_tools.show_elbow_curve(
+                results["X"],
+                range(2, 11),
+                key_prefix=self.session_key
+            )
 
 
-def kmeans_page(df) -> None:
-    st.title("KMeans Clustering")
-    train_kmeans(df)
-    st.markdown("---")
-    kmeans_analysis()
+# ============================================
+# DBSCAN CLUSTERING
+# ============================================
+
+class DBSCANModel(BaseClusterer):
+    """DBSCAN Clustering implementation."""
+    
+    def __init__(self):
+        super().__init__("DBSCAN Clustering", "dbscan_results")
+    
+    def get_model_params(self) -> Dict[str, Any]:
+        """Get DBSCAN specific parameters."""
+        eps = st.slider(
+            "Epsilon (eps) - Maximum distance between samples",
+            0.1, 5.0, 0.5, 0.1,
+            key=f"{self.session_key}_eps"
+        )
+        
+        min_samples = st.slider(
+            "Minimum Samples - Min points to form a cluster",
+            2, 20, 5,
+            key=f"{self.session_key}_min_samples"
+        )
+        
+        metric = st.selectbox(
+            "Distance Metric",
+            ["euclidean", "manhattan", "chebyshev", "minkowski"],
+            key=f"{self.session_key}_metric"
+        )
+        
+        return {
+            'eps': eps,
+            'min_samples': min_samples,
+            'metric': metric
+        }
+    
+    def create_model(self, params: Dict[str, Any]):
+        """Create DBSCAN model."""
+        return DBSCAN(**params)
+    
+    def get_analysis_options(self) -> List[str]:
+        """Get available analysis options."""
+        return [
+            "Cluster Distribution",
+            "Silhouette Analysis",
+            "PCA 2D Plot",
+            "Feature Boxplots",
+            "Noise Analysis"
+        ]
+    
+    def calculate_metrics(self, X, labels):
+        """Override to handle noise points (-1 label)."""
+        n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
+        n_noise = list(labels).count(-1)
+        
+        st.write(f"**Number of clusters:** {n_clusters}")
+        st.write(f"**Number of noise points:** {n_noise} ({n_noise/len(labels)*100:.2f}%)")
+        
+        # Silhouette score (exclude noise points)
+        if n_clusters > 1:
+            from sklearn.metrics import silhouette_score
+            mask = labels != -1
+            if mask.sum() > 0:
+                score = silhouette_score(X[mask], labels[mask])
+                st.metric("Silhouette Score (excluding noise)", f"{score:.4f}")
+        
+        return {}
+    
+    def show_model_specific_analysis(
+        self,
+        results: Dict,
+        options: List[str]
+    ) -> None:
+        """Show DBSCAN specific visualizations."""
+        if "Noise Analysis" in options:
+            import matplotlib.pyplot as plt
+            import numpy as np
+            from utils import download_plot
+            
+            st.write("🔍 **Noise Points Analysis**")
+            
+            labels = results["labels"]
+            n_noise = list(labels).count(-1)
+            n_clustered = len(labels) - n_noise
+            
+            fig, ax = plt.subplots(figsize=(8, 6))
+            ax.bar(["Clustered", "Noise"], [n_clustered, n_noise], 
+                  color=["#32CD32", "#FF6347"])
+            ax.set_ylabel("Count")
+            ax.set_title("Clustered vs Noise Points")
+            
+            for i, v in enumerate([n_clustered, n_noise]):
+                ax.text(i, v + 5, str(v), ha='center', va='bottom', fontweight='bold')
+            
+            st.pyplot(fig)
+            download_plot(fig, "noise_analysis")
+            plt.close(fig)
+
+
+# ============================================
+# AGGLOMERATIVE CLUSTERING
+# ============================================
+
+class AgglomerativeModel(BaseClusterer):
+    """Agglomerative Hierarchical Clustering implementation."""
+    
+    def __init__(self):
+        super().__init__("Agglomerative Clustering", "agg_results")
+    
+    def get_model_params(self) -> Dict[str, Any]:
+        """Get Agglomerative specific parameters."""
+        n_clusters = st.slider(
+            "Number of Clusters",
+            2, 10, 3,
+            key=f"{self.session_key}_n_clusters"
+        )
+        
+        linkage = st.selectbox(
+            "Linkage Method",
+            ["ward", "complete", "average", "single"],
+            key=f"{self.session_key}_linkage"
+        )
+        
+        affinity = st.selectbox(
+            "Affinity (Distance Metric)",
+            ["euclidean", "manhattan", "cosine"],
+            key=f"{self.session_key}_affinity"
+        )
+        
+        # Ward linkage only works with euclidean
+        if linkage == "ward" and affinity != "euclidean":
+            st.warning("⚠ Ward linkage requires Euclidean affinity. Automatically set to Euclidean.")
+            affinity = "euclidean"
+        
+        return {
+            'n_clusters': n_clusters,
+            'linkage': linkage,
+            'affinity': affinity
+        }
+    
+    def create_model(self, params: Dict[str, Any]):
+        """Create Agglomerative model."""
+        return AgglomerativeClustering(**params)
+    
+    def get_analysis_options(self) -> List[str]:
+        """Get available analysis options."""
+        return [
+            "Cluster Distribution",
+            "Silhouette Analysis",
+            "PCA 2D Plot",
+            "Feature Boxplots",
+            "Dendrogram"
+        ]
+    
+    def show_model_specific_analysis(
+        self,
+        results: Dict,
+        options: List[str]
+    ) -> None:
+        """Show Agglomerative specific visualizations."""
+        if "Dendrogram" in options:
+            import matplotlib.pyplot as plt
+            from scipy.cluster.hierarchy import dendrogram, linkage
+            from utils import download_plot
+            
+            st.write("🌳 **Dendrogram**")
+            
+            # Perform hierarchical clustering
+            Z = linkage(results["X"], method=results["model_params"]["linkage"])
+            
+            fig, ax = plt.subplots(figsize=(12, 6))
+            dendrogram(Z, ax=ax, truncate_mode='lastp', p=30)
+            ax.set_xlabel("Sample Index or (Cluster Size)")
+            ax.set_ylabel("Distance")
+            ax.set_title(f"Dendrogram ({results['model_params']['linkage']} linkage)", 
+                        fontsize=14, fontweight='bold')
+            
+            st.pyplot(fig)
+            download_plot(fig, "dendrogram")
+            plt.close(fig)
+
+
+# ============================================
+# PUBLIC API
+# ============================================
+
+def kmeans_page(df: pd.DataFrame) -> None:
+    """Entry point for KMeans page."""
+    model = KMeansModel()
+    model.page(df)
+
+
+def dbscan_page(df: pd.DataFrame) -> None:
+    """Entry point for DBSCAN page."""
+    model = DBSCANModel()
+    model.page(df)
+
+
+def agglomerative_page(df: pd.DataFrame) -> None:
+    """Entry point for Agglomerative Clustering page."""
+    model = AgglomerativeModel()
+    model.page(df)
