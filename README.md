@@ -50,22 +50,35 @@ A **Streamlit** application designed to empower non-programmers to explore datas
 
 ```
 data-ml-interface/
-├── Home_Page.py          # Main entry point for the app
-├── pages/                # Contains sub-pages for analysis, ML, and about sections
-│   ├── 01_Analysis.py
-│   ├── 02_ML.py
-│   ├── 03_About.py
-├── models/               # Machine learning models and utilities
-│   ├── regressors.py
-│   ├── classifiers.py
-│   ├── clusterers.py
-│   ├── utils.py
-├── utils.py              # Helper functions (e.g., encoding, downloading plots)
-├── plotting.py           # Visualization utilities
-├── stats.py              # Statistical analysis functions
-├── README.md             # Project documentation
-└── requirements.txt      # Python dependencies
+├── Home_Page.py                    # Main page
+├── pages/                          # Streamlit pages
+│   ├── 01_Analysis.py             
+│   ├── 02_ML.py                   
+│   └── 03_About.py                
+├── models/                         # ML models (OOP architecture)
+│   ├── __init__.py                # Public API exports
+│   ├── base_classifier.py         # Base class for classifiers
+│   ├── base_regressor.py          # Base class for regressors
+│   ├── base_clusterer.py          # Base class for clusterers
+│   ├── classifiers.py             # Decision Tree, KNN, Random Forest, XGBoost
+│   ├── regressors.py              # Linear Regression, SGD Regressor
+│   ├── clusterers.py              # K-Means, DBSCAN, Agglomerative
+│   ├── classification_utils.py    # Classification analysis tools
+│   ├── regression_utils.py        # Regression analysis tools
+│   ├── clustering_utils.py        # Clustering analysis tools
+│   └── utils.py                   # Model utilities
+├── utils.py                        # Core utilities 
+├── plotting.py                     # Visualization utilities
+├── stats.py                        # Statistical analysis 
+├── file.py                         # File management (FileManager class)
+├── README.md                       # Project documentation
+└── requirements.txt                # Python dependencies
 ```
+
+**Architecture**: Object-Oriented Programming (OOP) with SOLID principles
+- Each utility is organized into dedicated classes with clear responsibilities
+- Base classes for ML models enable easy extension and maintenance
+- Clean separation between data processing, visualization, and ML logic
 
 ---
 
