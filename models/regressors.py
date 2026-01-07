@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 from typing import Dict, Any, List
 from sklearn.linear_model import LinearRegression, SGDRegressor
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, MaxAbsScaler
 from sklearn.multioutput import MultiOutputRegressor
 from sklearn.neighbors import KNeighborsRegressor
 
@@ -319,7 +318,7 @@ class SGDRegressorModel(BaseRegressor):
 # ============================================
 
 class KNNRegressorModel(BaseRegressor):
-    """K-Nearest Neighbors Regressor with mandatory scaling."""
+    """K-Nearest Neighbors Regressor with optional scaling."""
     
     def __init__(self):
         super().__init__("KNN Regressor", "knn_reg_results")
@@ -339,11 +338,11 @@ class KNNRegressorModel(BaseRegressor):
         
         # ✅ 1. SCALING OPTIONS FIRST
         st.markdown("#### 📊 Scaling Options")
-        st.info("🎯 KNN is distance-based and requires feature scaling")
+        st.info("🎯 KNN is distance-based and strongly recommended to use feature scaling")
         
         scaler_option = st.selectbox(
             "Feature Scaling Method",
-            ["StandardScaler (Z-Score)", "MinMaxScaler", "MaxAbsScaler"],
+            ["StandardScaler (Z-Score)", "MinMaxScaler", "MaxAbsScaler", "None"],  # ✅ Added None
             index=0,
             key=f"{self.session_key}_scaler",
             help="Distance-based algorithms require all features to be on the same scale"
@@ -351,11 +350,11 @@ class KNNRegressorModel(BaseRegressor):
         
         scale_target = st.checkbox(
             "Scale Target Variable",
-            value=False,  # Optional for KNN
+            value=False,
             key=f"{self.session_key}_scale_target",
             help="Can improve performance for large target values"
         )
-                
+        
         # ✅ 2. KNN HYPERPARAMETERS
         st.markdown("#### ⚙️ KNN Hyperparameters")
         

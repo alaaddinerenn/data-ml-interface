@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional, List, Tuple
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, MaxAbsScaler
 
 from models.utils import encode_features
 from models.classification_utils import AnalysisTools
@@ -14,13 +15,11 @@ class BaseClassifier(ABC):
     """
     Abstract base class for all classifiers.
     
-    This class provides a common interface and shared functionality for all ML classifiers.
-    Child classes must implement abstract methods for model-specific behavior.
-    
     Attributes:
         model_name (str): Display name of the model
         session_key (str): Unique key for storing results in session state
         analysis_tools (AnalysisTools): Instance of analysis utilities
+        scaler (Optional): Feature scaler
     """
     
     def __init__(self, model_name: str, session_key: str):
@@ -34,17 +33,29 @@ class BaseClassifier(ABC):
         self.model_name = model_name
         self.session_key = session_key
         self.analysis_tools = AnalysisTools()
+        self.scaler = None
+    
+    @staticmethod
+    def _to_array(data):
+        """Safely convert to numpy array."""
+        if isinstance(data, np.ndarray):
+            return data
+        elif hasattr(data, 'values'):
+            return data.values
+        else:
+            return np.array(data)
+    
+    def needs_scaling(self) -> bool:
+        """
+        Override this if model requires/benefits from scaling.
+        
+        Returns:
+            True if model needs feature scaling
+        """
+        return False
     
     def get_common_params(self, df: pd.DataFrame) -> Dict[str, Any]:
-        """
-        Display UI elements and collect common training parameters.
-        
-        Args:
-            df: Input DataFrame
-            
-        Returns:
-            Dictionary containing common parameters like target, features, encoding type, etc.
-        """
+        """Display UI elements and collect common training parameters."""
         st.subheader("🔹 Model Settings")
         
         # Target selection
@@ -110,59 +121,72 @@ class BaseClassifier(ABC):
     def get_model_params(self) -> Dict[str, Any]:
         """
         Display UI elements and collect model-specific parameters.
-        
-        Must be implemented by child classes.
-        
-        Returns:
-            Dictionary containing model-specific parameters
+        Should include scaling UI if needs_scaling() returns True.
         """
         pass
     
     @abstractmethod
     def create_model(self, params: Dict[str, Any]):
-        """
-        Create and return the model instance.
-        
-        Must be implemented by child classes.
-        
-        Args:
-            params: Model parameters from get_model_params()
-            
-        Returns:
-            Initialized model instance
-        """
+        """Create and return the model instance."""
         pass
     
     @abstractmethod
     def get_analysis_options(self) -> List[str]:
-        """
-        Get list of available analysis options for this model.
-        
-        Must be implemented by child classes.
-        
-        Returns:
-            List of analysis option names
-        """
+        """Get list of available analysis options for this model."""
         pass
+    
+    def apply_scaling(
+        self,
+        X_train: pd.DataFrame,
+        X_test: pd.DataFrame,
+        features: List[str]
+    ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+        """
+        Apply scaling to features based on session_state settings.
+        
+        Args:
+            X_train: Training features
+            X_test: Test features
+            features: Feature names
+            
+        Returns:
+            Tuple of (X_train_scaled, X_test_scaled)
+        """
+        # Read scaler option from session_state
+        scaler_option = st.session_state.get(
+            f'{self.session_key}_scaler',
+            'None'
+        )
+        
+        if scaler_option == "StandardScaler (Z-Score)":
+            self.scaler = StandardScaler()
+        elif scaler_option == "MinMaxScaler":
+            self.scaler = MinMaxScaler()
+        elif scaler_option == "MaxAbsScaler":
+            self.scaler = MaxAbsScaler()
+        else:
+            self.scaler = None
+        
+        if self.scaler:
+            X_train = pd.DataFrame(
+                self.scaler.fit_transform(X_train),
+                columns=features,
+                index=X_train.index
+            )
+            X_test = pd.DataFrame(
+                self.scaler.transform(X_test),
+                columns=features,
+                index=X_test.index
+            )
+        
+        return X_train, X_test
     
     def prepare_data(
         self,
         df: pd.DataFrame,
         common_params: Dict[str, Any]
     ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series, List[str]]:
-        """
-        Prepare and split data for training.
-        
-        Args:
-            df: Input DataFrame
-            common_params: Common parameters from get_common_params()
-            
-        Returns:
-            Tuple of (X_train, X_test, y_train, y_test, features)
-            
-        Raises:
-            ValueError: If no features are selected
-        """
+        """Prepare and split data for training."""
         if not common_params['features']:
             raise ValueError("You must select at least one feature.")
         
@@ -173,7 +197,7 @@ class BaseClassifier(ABC):
             target_col=common_params['target']
         )
         
-        # Update features list after encoding (for one-hot encoding)
+        # Update features
         if common_params['encoding_type'] == "One-Hot Encoding":
             features = [col for col in df_encoded.columns 
                        if col != common_params['target']]
@@ -192,6 +216,9 @@ class BaseClassifier(ABC):
             shuffle=common_params['shuffle_data'],
             stratify=stratify_param
         )
+        
+        # Apply scaling if needed (reads from session_state)
+        X_train, X_test = self.apply_scaling(X_train, X_test, features)
         
         return X_train, X_test, y_train, y_test, features
     
