@@ -4,6 +4,7 @@ import numpy as np
 from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional, List, Tuple
 from sklearn.metrics import silhouette_score
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, MaxAbsScaler
 
 from models.utils import encode_features
 from models.clustering_utils import ClusteringAnalysisTools
@@ -13,12 +14,11 @@ class BaseClusterer(ABC):
     """
     Abstract base class for all clustering models.
     
-    Clustering is unsupervised learning - no target variable needed.
-    
     Attributes:
         model_name (str): Display name of the model
         session_key (str): Unique key for storing results in session state
         analysis_tools (ClusteringAnalysisTools): Instance of clustering analysis utilities
+        scaler (Optional): Feature scaler
     """
     
     def __init__(self, model_name: str, session_key: str):
@@ -32,6 +32,26 @@ class BaseClusterer(ABC):
         self.model_name = model_name
         self.session_key = session_key
         self.analysis_tools = ClusteringAnalysisTools()
+        self.scaler = None
+    
+    @staticmethod
+    def _to_array(data):
+        """Safely convert to numpy array."""
+        if isinstance(data, np.ndarray):
+            return data
+        elif hasattr(data, 'values'):
+            return data.values
+        else:
+            return np.array(data)
+    
+    def needs_scaling(self) -> bool:
+        """
+        Override this if model requires scaling (default: True for clustering).
+        
+        Returns:
+            True if model needs feature scaling
+        """
+        return True  # Most clustering algorithms need scaling
     
     def get_common_params(self, df: pd.DataFrame) -> Dict[str, Any]:
         """
@@ -45,7 +65,7 @@ class BaseClusterer(ABC):
         """
         st.subheader("🔹 Model Settings")
         
-        # Feature selection (no target for clustering!)
+        # Feature selection
         features = st.multiselect(
             "Select Features for Clustering",
             options=df.columns,
@@ -60,14 +80,6 @@ class BaseClusterer(ABC):
             key=f"{self.session_key}_encoding"
         )
         
-        # Scaling (almost mandatory for clustering)
-        scale_data = st.checkbox(
-            "Scale Data (StandardScaler)",
-            value=True,
-            help="Highly recommended for distance-based clustering",
-            key=f"{self.session_key}_scale"
-        )
-        
         # Random seed
         random_seed = st.number_input(
             "Random Seed",
@@ -79,7 +91,6 @@ class BaseClusterer(ABC):
         return {
             'features': features,
             'encoding_type': encoding_type,
-            'scale_data': scale_data,
             'random_seed': int(random_seed)
         }
     
@@ -87,6 +98,7 @@ class BaseClusterer(ABC):
     def get_model_params(self) -> Dict[str, Any]:
         """
         Get model-specific parameters from UI (implemented by child classes).
+        Should include scaling UI if needs_scaling() returns True.
         
         Returns:
             Dictionary containing model-specific parameters
@@ -116,22 +128,57 @@ class BaseClusterer(ABC):
         """
         pass
     
+    def apply_scaling(
+        self,
+        X: pd.DataFrame,
+        features: List[str]
+    ) -> np.ndarray:
+        """
+        Apply scaling to features based on session_state settings.
+        
+        Args:
+            X: Feature DataFrame
+            features: Feature names
+            
+        Returns:
+            Scaled numpy array
+        """
+        # Read scaler option from session_state (set by widget in get_model_params)
+        scaler_option = st.session_state.get(
+            f'{self.session_key}_scaler',
+            'StandardScaler (Z-Score)'  # Default
+        )
+        
+        if scaler_option == "StandardScaler (Z-Score)":
+            self.scaler = StandardScaler()
+        elif scaler_option == "MinMaxScaler":
+            self.scaler = MinMaxScaler()
+        elif scaler_option == "MaxAbsScaler":
+            self.scaler = MaxAbsScaler()
+        else:
+            self.scaler = None
+        
+        if self.scaler:
+            X_scaled = self.scaler.fit_transform(X)
+        else:
+            X_scaled = X.values
+        
+        return X_scaled
+    
     def prepare_data(
         self,
         df: pd.DataFrame,
         common_params: Dict[str, Any]
-    ) -> Tuple[np.ndarray, List[str], Optional[Any]]:
+    ) -> Tuple[np.ndarray, List[str]]:
         """
         Prepare data for clustering.
-        
-        Note: Clustering is unsupervised - no y variable!
         
         Args:
             df: Input DataFrame
             common_params: Common parameters from get_common_params()
             
         Returns:
-            Tuple of (X, features, scaler)
+            Tuple of (X_scaled, features)
             
         Raises:
             ValueError: If no features are selected
@@ -148,23 +195,16 @@ class BaseClusterer(ABC):
         
         # Update features after encoding
         if common_params['encoding_type'] == "One-Hot Encoding":
-            features = [col for col in df_encoded.columns 
-                       if col in df_encoded.columns]
+            features = [col for col in df_encoded.columns]
         else:
             features = common_params['features']
         
         X = df_encoded[features]
         
-        # Scaling (highly recommended for clustering)
-        scaler = None
-        if common_params['scale_data']:
-            from sklearn.preprocessing import StandardScaler
-            scaler = StandardScaler()
-            X = scaler.fit_transform(X)
-        else:
-            X = X.values
+        # Apply scaling (reads from session_state)
+        X_scaled = self.apply_scaling(X, features)
         
-        return X, features, scaler
+        return X_scaled, features
     
     def calculate_metrics(self, X: np.ndarray, labels: np.ndarray) -> Dict[str, float]:
         """
@@ -216,7 +256,7 @@ class BaseClusterer(ABC):
         if st.button("Train Model", key=f"{self.session_key}_train_btn"):
             try:
                 # Prepare data
-                X, features, scaler = self.prepare_data(df, common_params)
+                X, features = self.prepare_data(df, common_params)
                 
                 # Create and train model
                 model = self.create_model(model_params)
@@ -228,9 +268,9 @@ class BaseClusterer(ABC):
                     "X": X,
                     "labels": labels,
                     "features": features,
-                    "scaler": scaler,
+                    "scaler": self.scaler,
                     "model_params": model_params,
-                    "scaled": common_params['scale_data']
+                    "scaled": True  # Always scaled in base clusterer
                 }
                 
                 # Show success and metrics
