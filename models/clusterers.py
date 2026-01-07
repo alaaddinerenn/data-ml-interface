@@ -2,27 +2,46 @@ import streamlit as st
 import pandas as pd
 from typing import Dict, Any, List
 from sklearn.cluster import KMeans, DBSCAN, AgglomerativeClustering
-from sklearn.preprocessing import StandardScaler
 
 from .base import BaseClusterer
 
 
-# ============================================
 # KMEANS CLUSTERING
-# ============================================
-
 class KMeansModel(BaseClusterer):
     """KMeans Clustering implementation."""
     
     def __init__(self):
         super().__init__("KMeans Clustering", "kmeans_results")
     
+    def needs_scaling(self) -> bool:
+        """KMeans requires scaling (distance-based)."""
+        return True
+    
     def get_model_params(self) -> Dict[str, Any]:
         """Get KMeans specific parameters."""
+        
+        # 1. SCALING OPTIONS FIRST
+        st.markdown("#### 📊 Scaling Options")
+        st.info("🎯 KMeans is distance-based and requires feature scaling")
+        
+        scaler_option = st.selectbox(
+            "Feature Scaling Method",
+            ["StandardScaler (Z-Score)", "MinMaxScaler", "MaxAbsScaler"],
+            index=0,  # Default to StandardScaler
+            key=f"{self.session_key}_scaler",
+            help="Clustering algorithms require all features to be on the same scale"
+        )
+        
+        st.markdown("---")
+        
+        # 2. KMEANS PARAMETERS
+        st.markdown("#### ⚙️ KMeans Parameters")
+        
         n_clusters = st.slider(
             "Number of Clusters (k)",
             2, 10, 3,
-            key=f"{self.session_key}_n_clusters"
+            key=f"{self.session_key}_n_clusters",
+            help="Number of clusters to form"
         )
         
         n_init = st.number_input(
@@ -40,6 +59,7 @@ class KMeansModel(BaseClusterer):
             max_value=1000,
             value=300,
             step=50,
+            help="Maximum number of iterations per run",
             key=f"{self.session_key}_max_iter"
         )
         
@@ -78,34 +98,56 @@ class KMeansModel(BaseClusterer):
             )
 
 
-# ============================================
 # DBSCAN CLUSTERING
-# ============================================
-
 class DBSCANModel(BaseClusterer):
     """DBSCAN Clustering implementation."""
     
     def __init__(self):
         super().__init__("DBSCAN Clustering", "dbscan_results")
     
+    def needs_scaling(self) -> bool:
+        """DBSCAN requires scaling (distance-based)."""
+        return True
+    
     def get_model_params(self) -> Dict[str, Any]:
         """Get DBSCAN specific parameters."""
+        
+        # 1. SCALING OPTIONS FIRST
+        st.markdown("#### 📊 Scaling Options")
+        st.info("🎯 DBSCAN is distance-based and requires feature scaling")
+        
+        scaler_option = st.selectbox(
+            "Feature Scaling Method",
+            ["StandardScaler (Z-Score)", "MinMaxScaler", "MaxAbsScaler"],
+            index=0,
+            key=f"{self.session_key}_scaler",
+            help="DBSCAN uses distance metrics and requires scaled features"
+        )
+        
+        st.markdown("---")
+        
+        # 2. DBSCAN PARAMETERS
+        st.markdown("#### ⚙️ DBSCAN Parameters")
+        
         eps = st.slider(
             "Epsilon (eps) - Maximum distance between samples",
             0.1, 5.0, 0.5, 0.1,
-            key=f"{self.session_key}_eps"
+            key=f"{self.session_key}_eps",
+            help="Maximum distance between two samples for one to be considered in the neighborhood of the other"
         )
         
         min_samples = st.slider(
             "Minimum Samples - Min points to form a cluster",
             2, 20, 5,
-            key=f"{self.session_key}_min_samples"
+            key=f"{self.session_key}_min_samples",
+            help="Number of samples in a neighborhood for a point to be a core point"
         )
         
         metric = st.selectbox(
             "Distance Metric",
             ["euclidean", "manhattan", "chebyshev", "minkowski"],
-            key=f"{self.session_key}_metric"
+            key=f"{self.session_key}_metric",
+            help="Distance metric to use"
         )
         
         return {
@@ -177,34 +219,56 @@ class DBSCANModel(BaseClusterer):
             plt.close(fig)
 
 
-# ============================================
 # AGGLOMERATIVE CLUSTERING
-# ============================================
-
 class AgglomerativeModel(BaseClusterer):
     """Agglomerative Hierarchical Clustering implementation."""
     
     def __init__(self):
         super().__init__("Agglomerative Clustering", "agg_results")
     
+    def needs_scaling(self) -> bool:
+        """Agglomerative requires scaling (distance-based)."""
+        return True
+    
     def get_model_params(self) -> Dict[str, Any]:
         """Get Agglomerative specific parameters."""
+        
+        # 1. SCALING OPTIONS FIRST
+        st.markdown("#### 📊 Scaling Options")
+        st.info("🎯 Agglomerative is distance-based and requires feature scaling")
+        
+        scaler_option = st.selectbox(
+            "Feature Scaling Method",
+            ["StandardScaler (Z-Score)", "MinMaxScaler", "MaxAbsScaler"],
+            index=0,
+            key=f"{self.session_key}_scaler",
+            help="Hierarchical clustering uses distance metrics and requires scaled features"
+        )
+        
+        st.markdown("---")
+        
+        # 2. AGGLOMERATIVE PARAMETERS
+        st.markdown("#### ⚙️ Agglomerative Parameters")
+        
         n_clusters = st.slider(
             "Number of Clusters",
             2, 10, 3,
-            key=f"{self.session_key}_n_clusters"
+            key=f"{self.session_key}_n_clusters",
+            help="Number of clusters to find"
         )
         
         linkage = st.selectbox(
             "Linkage Method",
             ["ward", "complete", "average", "single"],
-            key=f"{self.session_key}_linkage"
+            key=f"{self.session_key}_linkage",
+            help="Which linkage criterion to use"
         )
         
         metric = st.selectbox(
             "Distance Metric",
             ["euclidean", "manhattan", "cosine"],
-            key=f"{self.session_key}_metric"
+            key=f"{self.session_key}_metric",
+            help="Distance metric to use"
         )
         
         # Ward linkage only works with euclidean
@@ -260,10 +324,7 @@ class AgglomerativeModel(BaseClusterer):
             plt.close(fig)
 
 
-# ============================================
 # PUBLIC API
-# ============================================
-
 def kmeans_page(df: pd.DataFrame) -> None:
     """Entry point for KMeans page."""
     model = KMeansModel()

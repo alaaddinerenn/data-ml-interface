@@ -27,8 +27,10 @@ from models.classifiers import (
 from models.regressors import (
     LinearRegressionModel,
     SGDRegressorModel,
+    KNNRegressorModel,
     linear_regression_page,
-    sgd_regression_page
+    sgd_regression_page,
+    knn_regression_page
 )
 
 # Clusterers
@@ -61,7 +63,8 @@ __all__ = [
     # Regressor pages
     'linear_regression_page',
     'sgd_regression_page',
-    
+    'knn_regression_page',
+
     # Clusterer classes
     'KMeansModel',
     'DBSCANModel',

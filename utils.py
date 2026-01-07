@@ -45,7 +45,7 @@ class DownloadManager:
         
         feature_part = feature_part.replace(" ", "_")
         
-        # ✅ FIX: Create unique hash-based keys to avoid duplicates
+        # Create unique hash-based keys to avoid duplicates
         # Combine graph_type and feature_part to create unique identifier
         unique_string = f"{graph_type}_{feature_part}_{id(fig)}"
         key_hash = hashlib.md5(unique_string.encode()).hexdigest()[:8]
@@ -438,36 +438,3 @@ class DataCleaner:
                 df = df[df[col].notna()]
         
         return df
-
-
-class FeatureEncoder:
-    """Handles feature encoding operations."""
-    
-    @staticmethod
-    def encode_features(
-        df: pd.DataFrame,
-        encoding_type: str = "One-Hot Encoding"
-    ) -> pd.DataFrame:
-        """
-        Encode categorical features.
-        
-        Args:
-            df: DataFrame to encode
-            encoding_type: Type of encoding ('One-Hot Encoding' or 'Label Encoding')
-            
-        Returns:
-            Encoded DataFrame
-        """
-        df_encoded = df.copy()
-        
-        if encoding_type == "One-Hot Encoding":
-            df_encoded = pd.get_dummies(df_encoded, drop_first=False)
-        
-        elif encoding_type == "Label Encoding":
-            le = LabelEncoder()
-            categorical_cols = df_encoded.select_dtypes(include=['object']).columns
-            
-            for col in categorical_cols:
-                df_encoded[col] = le.fit_transform(df_encoded[col])
-        
-        return df_encoded

@@ -7,12 +7,7 @@ from typing import Dict, Any, List
 from sklearn.tree import DecisionTreeClassifier, plot_tree
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import (
-    StandardScaler,
-    MinMaxScaler,
-    MaxAbsScaler,
-    LabelEncoder
-)
+from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import GridSearchCV
 import xgboost as xgb
 
@@ -20,10 +15,7 @@ from .base import BaseClassifier
 from utils import DownloadManager
 
 
-# ============================================
 # DECISION TREE CLASSIFIER
-# ============================================
-
 class DecisionTreeModel(BaseClassifier):
     """Decision Tree Classifier implementation."""
     
@@ -90,25 +82,36 @@ class DecisionTreeModel(BaseClassifier):
             plt.close(fig)
 
 
-# ============================================
 # KNN CLASSIFIER
-# ============================================
-
 class KNNModel(BaseClassifier):
     """K-Nearest Neighbors Classifier implementation."""
     
     def __init__(self):
         super().__init__("KNN Classifier", "knn_results")
-        self.scaler = None
+    
+    def needs_scaling(self) -> bool:
+        """KNN requires scaling (distance-based)."""
+        return True
     
     def get_model_params(self) -> Dict[str, Any]:
         """Get KNN specific parameters."""
-        # Scaling option
+        
+        # 1. SCALING OPTIONS FIRST
+        st.markdown("#### 📊 Scaling Options")
+        st.info("🎯 KNN is distance-based and strongly recommended to use feature scaling")
+        
         scaler_option = st.selectbox(
-            "Scaling Method",
-            ["StandardScaler (Z-Score)", "MinMaxScaler", "MaxAbsScaler", "None"],
-            key=f"{self.session_key}_scaler"
+            "Feature Scaling Method",
+            ["StandardScaler (Z-Score)", "MinMaxScaler", "MaxAbsScaler", "None"], 
+            index=0,  # Default to StandardScaler
+            key=f"{self.session_key}_scaler",
+            help="Distance-based algorithms require all features to be on the same scale"
         )
+        
+        st.markdown("---")
+        
+        # 2. KNN PARAMETERS
+        st.markdown("#### ⚙️ KNN Parameters")
         
         # Parameter selection mode
         param_mode = st.radio(
@@ -117,64 +120,27 @@ class KNNModel(BaseClassifier):
             key=f"{self.session_key}_param_mode"
         )
         
-        params = {
-            'scaler_option': scaler_option,
-            'param_mode': param_mode
-        }
+        params = {'param_mode': param_mode}
         
         if param_mode == "Manual":
             params['n_neighbors'] = st.slider(
                 "K Value (Number of Neighbors)",
                 1, 20, 5,
-                key=f"{self.session_key}_k"
+                key=f"{self.session_key}_k",
+                help="Number of neighbors to use for classification"
             )
             params['metric'] = st.selectbox(
                 "Distance Metric",
-                ["euclidean", "minkowski", "manhattan", "chebyshev"],
-                key=f"{self.session_key}_metric"
+                ["euclidean", "manhattan", "minkowski", "chebyshev"],
+                index=0,
+                key=f"{self.session_key}_metric",
+                help="Distance metric for nearest neighbor search"
             )
         
         return params
     
-    def prepare_data(self, df, common_params):
-        """Override to add scaling support."""
-        X_train, X_test, y_train, y_test, features = super().prepare_data(
-            df, common_params
-        )
-        
-        # Apply scaling if selected
-        scaler_option = st.session_state.get(
-            f'{self.session_key}_scaler_option',
-            'None'
-        )
-        
-        if scaler_option == "StandardScaler (Z-Score)":
-            self.scaler = StandardScaler()
-        elif scaler_option == "MinMaxScaler":
-            self.scaler = MinMaxScaler()
-        elif scaler_option == "MaxAbsScaler":
-            self.scaler = MaxAbsScaler()
-        else:
-            self.scaler = None
-        
-        if self.scaler:
-            X_train = pd.DataFrame(
-                self.scaler.fit_transform(X_train),
-                columns=features,
-                index=X_train.index
-            )
-            X_test = pd.DataFrame(
-                self.scaler.transform(X_test),
-                columns=features,
-                index=X_test.index
-            )
-        
-        return X_train, X_test, y_train, y_test, features
-    
     def create_model(self, params: Dict[str, Any]):
         """Create KNN model."""
-        # Store scaler option in session state
-        st.session_state[f'{self.session_key}_scaler_option'] = params.pop('scaler_option')
         param_mode = params.pop('param_mode')
         
         if param_mode == "Automatic (GridSearchCV)":
@@ -199,7 +165,7 @@ class KNNModel(BaseClassifier):
                     
                     param_grid = {
                         "n_neighbors": list(range(1, 21)),
-                        "metric": ["euclidean", "minkowski", "manhattan", "chebyshev"]
+                        "metric": ["euclidean", "manhattan", "minkowski", "chebyshev"]
                     }
                     
                     grid = GridSearchCV(
@@ -271,10 +237,7 @@ class KNNModel(BaseClassifier):
         ]
 
 
-# ============================================
 # RANDOM FOREST CLASSIFIER
-# ============================================
-
 class RandomForestModel(BaseClassifier):
     """Random Forest Classifier implementation."""
     
@@ -360,10 +323,7 @@ class RandomForestModel(BaseClassifier):
             st.dataframe(fi_df)
 
 
-# ============================================
 # XGBOOST CLASSIFIER
-# ============================================
-
 class XGBoostModel(BaseClassifier):
     """XGBoost Classifier implementation."""
     
@@ -544,10 +504,7 @@ class XGBoostModel(BaseClassifier):
                     st.dataframe(fi_df)
 
 
-# ============================================
 # PUBLIC API FUNCTIONS
-# ============================================
-
 def decision_tree_page(df: pd.DataFrame) -> None:
     """Entry point for Decision Tree page."""
     model = DecisionTreeModel()
