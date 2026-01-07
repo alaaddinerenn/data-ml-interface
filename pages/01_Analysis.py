@@ -28,7 +28,7 @@ FileManager.load_file()
 # Main analysis flow
 if "df" in st.session_state and not st.session_state.df.empty:
     # Show initial statistics
-    StatisticsDisplay.show_stats()
+    StatisticsDisplay.show_stats(context="initial")  # Add context
 
     # Data cleaning workflow
     if not st.session_state.cleaned:
@@ -48,7 +48,7 @@ if "df" in st.session_state and not st.session_state.df.empty:
     if st.session_state.cleaned:
         if not st.session_state.already_cleaned:
             # Show statistics after cleaning
-            StatisticsDisplay.show_stats()
+            StatisticsDisplay.show_stats(context="cleaned")  # Different context
             
             # Compare before/after
             DataComparator.compare(st.session_state.df, st.session_state.df_clean)

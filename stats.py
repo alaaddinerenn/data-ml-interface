@@ -11,12 +11,13 @@ class StatisticsDisplay:
     """Handles statistical analysis and visualization display."""
     
     @staticmethod
-    def show_stats(df: Optional[pd.DataFrame] = None) -> None:
+    def show_stats(df: Optional[pd.DataFrame] = None, context: str = "initial") -> None:
         """
         Display comprehensive statistics for dataset.
         
         Args:
             df: DataFrame to analyze (uses session state if None)
+            context: Context identifier for unique keys ('initial', 'cleaned', 'raw')
         """
         # Get DataFrame from session state if not provided
         if df is None:
@@ -30,18 +31,19 @@ class StatisticsDisplay:
         StatisticsDisplay._show_basic_info(df)
         
         # Determine data type (with user interaction if needed)
-        data_type, target_cols = StatisticsDisplay._determine_data_type_interactive(df)
+        data_type, target_cols = StatisticsDisplay._determine_data_type_interactive(df, context)
         
         # Show appropriate analysis based on type
         if data_type == "classification":
-            StatisticsDisplay._show_classification_analysis(df, target_cols)
+            StatisticsDisplay._show_classification_analysis(df, target_cols, context)
         elif data_type == "clustering":
-            StatisticsDisplay._show_clustering_analysis(df, target_cols)
+            StatisticsDisplay._show_clustering_analysis(df, target_cols, context)
         elif data_type == "regression":
-            StatisticsDisplay._show_regression_analysis(df, target_cols)
+            StatisticsDisplay._show_regression_analysis(df, target_cols, context)
         else:
-            StatisticsDisplay._show_generic_analysis(df)
-    
+            StatisticsDisplay._show_generic_analysis(df, context)
+
+
     @staticmethod
     def _get_dataframe_from_session() -> Optional[pd.DataFrame]:
         """Retrieve DataFrame from session state."""
@@ -80,15 +82,24 @@ class StatisticsDisplay:
             st.dataframe(col_info)
     
     @staticmethod
-    def _determine_data_type_interactive(df: pd.DataFrame) -> Tuple[str, List[str]]:
+    def _determine_data_type_interactive(df: pd.DataFrame, context: str = "initial") -> Tuple[str, List[str]]:
         """
         Determine dataset type with user interaction if needed.
         
+        Args:
+            df: DataFrame to analyze
+            context: Context identifier for unique keys
+    
         Returns:
             Tuple of (data_type, target_columns)
         """
         st.markdown("---")
         st.markdown("### 🎯 Dataset Type Detection")
+        
+        # Context-specific session state key
+        detection_key = f'stats_detection_mode_{context}'
+        if detection_key not in st.session_state:
+            st.session_state[detection_key] = "🤖 Auto-Detection"
         
         # Try auto-detection
         auto_type, auto_targets = StatisticsDisplay._auto_detect_type(df)
@@ -98,9 +109,9 @@ class StatisticsDisplay:
             detection_mode = st.radio(
                 "Select Detection Mode:",
                 ["🤖 Auto-Detection", "✍️ Manual Selection"],
-                key="detection_mode",
+                key=detection_key,  # Unique per context
                 horizontal=True,
-                index=0  # Default to auto
+                index=0
             )
             
             if detection_mode == "🤖 Auto-Detection":
@@ -113,7 +124,7 @@ class StatisticsDisplay:
         
         # Manual selection
         st.markdown("---")
-        return StatisticsDisplay._manual_type_selection(df)
+        return StatisticsDisplay._manual_type_selection(df, context)
     
     @staticmethod
     def _auto_detect_type(df: pd.DataFrame) -> Tuple[str, List[str]]:
@@ -177,17 +188,21 @@ class StatisticsDisplay:
         return "unknown", []
     
     @staticmethod
-    def _manual_type_selection(df: pd.DataFrame) -> Tuple[str, List[str]]:
+    def _manual_type_selection(df: pd.DataFrame, context: str = "initial") -> Tuple[str, List[str]]:
         """
         Allow user to manually specify dataset type and target.
         
+        Args:
+            df: DataFrame
+            context: Context identifier for unique keys
+    
         Returns:
             Tuple of (data_type, target_columns)
         """
         data_type = st.selectbox(
             "📊 Select Dataset Type",
             ["Generic (No specific task)", "Classification", "Regression", "Clustering"],
-            key="manual_data_type"
+            key=f"stats_manual_data_type_{context}"  # Unique per context
         )
         
         target_cols = []
@@ -196,7 +211,7 @@ class StatisticsDisplay:
             target_col = st.selectbox(
                 "🎯 Select Target Column (Class/Label)",
                 options=df.columns,
-                key="manual_class_target"
+                key=f"stats_manual_class_target_{context}"  # Unique
             )
             target_cols = [target_col] if target_col else []
             data_type = "classification"
@@ -205,20 +220,20 @@ class StatisticsDisplay:
             allow_multi = st.checkbox(
                 "Multiple Targets (Multi-output Regression)",
                 value=False,
-                key="manual_multi_target"
+                key=f"stats_manual_multi_target_{context}"  # Unique
             )
             
             if allow_multi:
                 target_cols = st.multiselect(
                     "🎯 Select Target Columns",
                     options=df.columns,
-                    key="manual_reg_targets"
+                    key=f"stats_manual_reg_targets_{context}"  # Unique
                 )
             else:
                 target_col = st.selectbox(
                     "🎯 Select Target Column",
                     options=df.columns,
-                    key="manual_reg_target"
+                    key=f"stats_manual_reg_target_{context}"  # Unique
                 )
                 target_cols = [target_col] if target_col else []
             
@@ -228,7 +243,7 @@ class StatisticsDisplay:
             target_col = st.selectbox(
                 "🔍 Select Cluster Column (if already clustered)",
                 options=["None"] + list(df.columns),
-                key="manual_cluster_target"
+                key=f"stats_manual_cluster_target_{context}"  # Unique
             )
             target_cols = [target_col] if target_col != "None" else []
             data_type = "clustering"
@@ -239,13 +254,13 @@ class StatisticsDisplay:
         return data_type, target_cols
     
     @staticmethod
-    def _show_classification_analysis(df: pd.DataFrame, target_cols: List[str]) -> None:
+    def _show_classification_analysis(df: pd.DataFrame, target_cols: List[str], context: str = "initial") -> None:
         """Show analysis for classification data."""
         st.markdown("### 🎯 Classification Analysis")
         
         if not target_cols:
             st.warning("No target column specified.")
-            StatisticsDisplay._show_generic_analysis(df)
+            StatisticsDisplay._show_generic_analysis(df, context)
             return
         
         target_col = target_cols[0]
@@ -258,44 +273,44 @@ class StatisticsDisplay:
         StatisticsDisplay._show_statistical_summary(feature_df)
         
         # Correlation matrix (if numerical features exist)
-        StatisticsDisplay._show_correlation_if_applicable(df, target_cols)
+        StatisticsDisplay._show_correlation_if_applicable(df, target_cols, context)
         
         # Visualizations
-        StatisticsDisplay._show_feature_visualizations(df, target_col)
+        StatisticsDisplay._show_feature_visualizations(df, target_col, context)
     
     @staticmethod
-    def _show_clustering_analysis(df: pd.DataFrame, target_cols: List[str]) -> None:
+    def _show_clustering_analysis(df: pd.DataFrame, target_cols: List[str], context: str = "initial") -> None:
         """Show analysis for clustering data."""
         st.markdown("### 🔍 Clustering Analysis")
-        
+    
         if not target_cols:
             st.info("ℹ️ No cluster column found. Showing generic analysis.")
-            StatisticsDisplay._show_generic_analysis(df)
+            StatisticsDisplay._show_generic_analysis(df, context)  # Pass context
             return
-        
+    
         target_col = target_cols[0]
-        
+    
         # Cluster distribution
         StatisticsDisplay._show_class_distribution(df, target_col, title="Cluster Distribution")
-        
+    
         # Feature analysis
         feature_df = df.drop(columns=target_cols)
         StatisticsDisplay._show_statistical_summary(feature_df)
-        
+    
         # Correlation matrix
-        StatisticsDisplay._show_correlation_if_applicable(df, target_cols)
-        
+        StatisticsDisplay._show_correlation_if_applicable(df, target_cols, context)  # Pass context
+    
         # Visualizations
-        StatisticsDisplay._show_feature_visualizations(df, target_col)
+        StatisticsDisplay._show_feature_visualizations(df, target_col, context)  # Pass context
     
     @staticmethod
-    def _show_regression_analysis(df: pd.DataFrame, target_cols: List[str]) -> None:
+    def _show_regression_analysis(df: pd.DataFrame, target_cols: List[str], context: str = "initial") -> None:
         """Show analysis for regression data."""
         st.markdown("### 📈 Regression Analysis")
         
         if not target_cols:
             st.warning("No target column specified.")
-            StatisticsDisplay._show_generic_analysis(df)
+            StatisticsDisplay._show_generic_analysis(df, context)  # Pass context
             return
         
         # Feature analysis
@@ -305,30 +320,32 @@ class StatisticsDisplay:
         PlottingTools.plot_correlation_heatmap(df)
     
     @staticmethod
-    def _show_generic_analysis(df: pd.DataFrame) -> None:
+    def _show_generic_analysis(df: pd.DataFrame, context: str = "initial") -> None:
         """Show generic analysis for unknown data type."""
         st.markdown("### 📊 General Analysis")
         
         StatisticsDisplay._show_statistical_summary(df)
         
         # Correlation matrix (if numerical features exist)
-        StatisticsDisplay._show_correlation_if_applicable(df, exclude_cols=[])
+        StatisticsDisplay._show_correlation_if_applicable(df, exclude_cols=[], context=context)  # ✅ Pass context
     
     @staticmethod
     def _show_correlation_if_applicable(
         df: pd.DataFrame,
-        exclude_cols: List[str] = None
+        exclude_cols: List[str] = None,
+        context: str = "initial"
     ) -> None:
         """
         Show correlation heatmap if dataset has numerical features.
         
         Args:
             df: DataFrame to analyze
-            exclude_cols: Columns to exclude from correlation (e.g., target/label)
+            exclude_cols: Columns to exclude from correlation
+            context: Context identifier for unique keys
         """
         exclude_cols = exclude_cols or []
         
-        # Get numerical columns (excluding target/label/cluster)
+        # Get numerical columns
         feature_df = df.drop(columns=exclude_cols, errors='ignore')
         numeric_cols = feature_df.select_dtypes(include=['number']).columns.tolist()
         
@@ -353,9 +370,9 @@ class StatisticsDisplay:
             selected_features = st.multiselect(
                 "Select features for correlation analysis:",
                 options=numeric_cols,
-                default=numeric_cols[:15],  # Default: first 15
+                default=numeric_cols[:15],
                 max_selections=15,
-                key="correlation_features",
+                key=f"correlation_features_{context}",  # Unique per context
                 help="Maximum 15 features can be selected for clear visualization"
             )
             
@@ -367,10 +384,8 @@ class StatisticsDisplay:
                 st.warning("Please select at least 2 features for correlation analysis.")
                 return
             
-            # Use selected features
             correlation_df = feature_df[selected_features]
         else:
-            # Use all features if <= 15
             correlation_df = feature_df
         
         # Plot correlation heatmap
@@ -428,7 +443,7 @@ class StatisticsDisplay:
         st.dataframe(numeric_df.describe().round(3))
     
     @staticmethod
-    def _show_feature_visualizations(df: pd.DataFrame, hue: str) -> None:
+    def _show_feature_visualizations(df: pd.DataFrame, hue: str, context: str = "initial") -> None:
         """Show interactive feature visualizations."""
         st.markdown("#### 📊 Feature Visualizations")
         
@@ -443,24 +458,40 @@ class StatisticsDisplay:
             "Select features to visualize",
             options=features,
             default=features[:min(2, len(features))],
-            key="viz_features"
+            key=f"viz_features_{context}"
         )
         
         if not selected_features:
             return
         
-        # Plot type selection
+        # Plot type selection with unique keys
         st.markdown("**Select Plot Types:**")
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:
-            show_hist = st.checkbox("📊 Histogram + KDE", value=True)
+            show_hist = st.checkbox(
+                "📊 Histogram + KDE",
+                value=True,
+                key=f"show_hist_{context}"  # Add context-based key
+            )
         with col2:
-            show_class_hist = st.checkbox("🎨 Histogram by Class", value=True)
+            show_class_hist = st.checkbox(
+                "🎨 Histogram by Class",
+                value=True,
+                key=f"show_class_hist_{context}"  # Add context-based key
+            )
         with col3:
-            show_box = st.checkbox("📦 Boxplot", value=False)
+            show_box = st.checkbox(
+                "📦 Boxplot",
+                value=False,
+                key=f"show_box_{context}"  # Add context-based key
+            )
         with col4:
-            show_scatter = st.checkbox("🔵 Scatter Plot", value=False)
+            show_scatter = st.checkbox(
+                "🔵 Scatter Plot",
+                value=False,
+                key=f"show_scatter_{context}"  # Add context-based key
+            )
         
         # Show plots
         if show_hist:
@@ -493,7 +524,7 @@ class StatisticsDisplay:
                 "Select exactly 2 features",
                 options=features,
                 default=features[:min(2, len(features))],
-                key="scatter_features"
+                key=f"scatter_features_{context}"  # Add context-based key
             )
             
             if len(scatter_features) == 2:
