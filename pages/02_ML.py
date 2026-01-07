@@ -93,7 +93,6 @@ elif 'df_for_ml_raw' in st.session_state and st.session_state.df_for_ml_raw is n
 
 # If no data from analysis, show file uploader
 if not data_from_analysis:
-    st.info("📤 Upload a dataset to get started with machine learning")
     df_uploaded = FileManager.load_file()
     
     if df_uploaded is not None:

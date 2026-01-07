@@ -17,6 +17,42 @@ class FileManager:
         Returns:
             DataFrame if file is loaded, None otherwise
         """
+        # Show format requirements
+        with st.expander("ℹ️ File Format Requirements", expanded=False):
+            st.markdown("""
+            ### 📋 Supported Formats
+            - **CSV** (.csv) - Comma/semicolon separated
+            - **Excel** (.xlsx, .xls)
+            - **TSV** (.tsv) - Tab separated
+            - **JSON** (.json)
+            - **Parquet** (.parquet)
+            
+            ### ⚠️ Excel File Requirements
+            For Excel files to be read correctly:
+            
+            1. **Data must start from Row 1**
+               - No empty rows at the top
+               - Column headers in the first row
+            
+            2. **Consistent column structure**
+               - All rows must have the same number of columns
+               - No merged cells in data area
+            
+            3. **No special formatting**
+               - Avoid colored cells, borders (they're ignored anyway)
+               - Remove charts, images, or other objects
+            
+            4. **Single sheet recommended**
+               - If multiple sheets exist, only the first one is read
+               - Consider saving specific sheets as separate files
+            
+            5. **Clean data**
+               - Remove formulas (convert to values)
+               - No hidden rows/columns in data area
+            
+            ✅ **Best Practice:** Save Excel as CSV for guaranteed compatibility!
+            """)
+        
         uploaded_file = st.file_uploader(
             "📁 Upload your dataset",
             type=FileManager.SUPPORTED_EXTENSIONS,
@@ -58,8 +94,7 @@ class FileManager:
     @staticmethod
     def _clear_session_state() -> None:
         """Clear file-related session state."""
-        # Tüm session state'i temizle (sadece belirli anahtarları değil)
-        keys_to_keep = {'_streamlit_version'}  # Streamlit'in iç anahtarları
+        keys_to_keep = {'_streamlit_version'}
         
         keys_to_delete = [
             key for key in st.session_state.keys() 
@@ -88,7 +123,21 @@ class FileManager:
             elif filename.endswith('.tsv'):
                 df = pd.read_csv(uploaded_file, sep='\t')
             elif filename.endswith(('.xlsx', '.xls')):
+                # Excel-specific warning
+                st.info("📊 Reading Excel file... Make sure your data format is correct!")
                 df = pd.read_excel(uploaded_file)
+                
+                # Validate Excel file structure
+                if df.columns[0] == 'Unnamed: 0' or any('Unnamed' in str(col) for col in df.columns[:3]):
+                    st.warning(
+                        "⚠️ **Potential Excel formatting issue detected!**\n\n"
+                        "Your file may have:\n"
+                        "- Empty rows at the top\n"
+                        "- Missing column headers\n"
+                        "- Merged cells\n\n"
+                        "**Recommendation:** Open the expander above to see proper formatting guidelines."
+                    )
+                
             elif filename.endswith('.json'):
                 df = pd.read_json(uploaded_file)
             elif filename.endswith('.parquet'):
@@ -118,6 +167,19 @@ class FileManager:
             
         except Exception as e:
             st.error(f"❌ Error loading file: {str(e)}")
+            
+            # Excel-specific error guidance
+            if filename.endswith(('.xlsx', '.xls')):
+                st.error(
+                    "**Excel file could not be read!**\n\n"
+                    "Common causes:\n"
+                    "1. Corrupted file\n"
+                    "2. Complex formatting (merged cells, formulas)\n"
+                    "3. Multiple sheets with different structures\n"
+                    "4. Password-protected file\n\n"
+                    "**Solution:** Try saving your Excel file as CSV and re-upload."
+                )
+            
             st.exception(e)
             return None
     
