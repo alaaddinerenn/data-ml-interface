@@ -1,6 +1,5 @@
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, MaxAbsScaler, LabelEncoder
+from sklearn.preprocessing import LabelEncoder
 import pandas as pd
-import streamlit as st
 
 
 def encode_features(df, encoding_type="One-Hot Encoding", target_col=None):
@@ -28,15 +27,3 @@ def encode_features(df, encoding_type="One-Hot Encoding", target_col=None):
                 df_encoded[col] = le.fit_transform(df_encoded[col])
 
     return df_encoded
-
-
-def get_scaler(scaler_name):
-    if scaler_name == "Standard Scaler (Z-Score)":
-        return StandardScaler()
-    elif scaler_name == "Min-Max Scaler":
-        return MinMaxScaler()
-    elif scaler_name == "Max-Abs Scaler":
-        return MaxAbsScaler()
-    # robust scaling
-    # Additional scaler descriptions can be added
-    return None
