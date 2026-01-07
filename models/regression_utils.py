@@ -3,14 +3,24 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from typing import Optional, List
+from typing import Optional, List, Union
 from sklearn.model_selection import learning_curve
 
 from utils import DownloadManager
 
 
 class RegressionAnalysisTools:
-    """Common analysis and visualization tools for regressors."""
+    """Utility class for regression analysis and visualization."""
+    
+    @staticmethod
+    def _to_array(data):
+        """Safely convert to numpy array."""
+        if isinstance(data, np.ndarray):
+            return data
+        elif hasattr(data, 'values'):
+            return data.values
+        else:
+            return np.array(data)
     
     @staticmethod
     def show_actual_vs_predicted(
@@ -24,12 +34,16 @@ class RegressionAnalysisTools:
         st.markdown("### 📈 **Actual vs Predicted Values**")
         
         if not is_multioutput:
+            # Single output
+            y_test_arr = RegressionAnalysisTools._to_array(y_test)
+            y_pred_arr = RegressionAnalysisTools._to_array(y_pred)
+            
             fig, ax = plt.subplots(figsize=(8, 6))
-            ax.scatter(y_test, y_pred, alpha=0.6, edgecolors='k')
+            ax.scatter(y_test_arr, y_pred_arr, alpha=0.6, edgecolors='k')
             
             # Perfect prediction line
-            min_val = min(y_test.min(), y_pred.min())
-            max_val = max(y_test.max(), y_pred.max())
+            min_val = min(y_test_arr.min(), y_pred_arr.min())
+            max_val = max(y_test_arr.max(), y_pred_arr.max())
             ax.plot([min_val, max_val], [min_val, max_val], 'r--', lw=2, label='Perfect Prediction')
             
             ax.set_xlabel("Actual Values")
@@ -42,13 +56,22 @@ class RegressionAnalysisTools:
             DownloadManager.download_plot(fig, "actual_vs_predicted")
             plt.close(fig)
         else:
-            # Multi-output: separate plot for each target
+            # Multi-output
+            y_test_arr = RegressionAnalysisTools._to_array(y_test)
+            y_pred_arr = RegressionAnalysisTools._to_array(y_pred)
+            
+            # Ensure 2D
+            if y_test_arr.ndim == 1:
+                y_test_arr = y_test_arr.reshape(-1, 1)
+            if y_pred_arr.ndim == 1:
+                y_pred_arr = y_pred_arr.reshape(-1, 1)
+            
             for i, col in enumerate(target_names):
                 fig, ax = plt.subplots(figsize=(8, 6))
-                ax.scatter(y_test[col], y_pred[:, i], alpha=0.6, edgecolors='k')
+                ax.scatter(y_test_arr[:, i], y_pred_arr[:, i], alpha=0.6, edgecolors='k')
                 
-                min_val = min(y_test[col].min(), y_pred[:, i].min())
-                max_val = max(y_test[col].max(), y_pred[:, i].max())
+                min_val = min(y_test_arr[:, i].min(), y_pred_arr[:, i].min())
+                max_val = max(y_test_arr[:, i].max(), y_pred_arr[:, i].max())
                 ax.plot([min_val, max_val], [min_val, max_val], 'r--', lw=2)
                 
                 ax.set_xlabel(f"Actual {col}")
@@ -72,10 +95,13 @@ class RegressionAnalysisTools:
         st.markdown("### 📉 **Residual Plot**")
         
         if not is_multioutput:
-            residuals = y_test - y_pred
+            # Single output
+            y_test_arr = RegressionAnalysisTools._to_array(y_test)
+            y_pred_arr = RegressionAnalysisTools._to_array(y_pred)
+            residuals = y_test_arr - y_pred_arr
             
             fig, ax = plt.subplots(figsize=(8, 6))
-            ax.scatter(y_pred, residuals, alpha=0.6, edgecolors='k')
+            ax.scatter(y_pred_arr, residuals, alpha=0.6, edgecolors='k')
             ax.axhline(y=0, color='r', linestyle='--', lw=2)
             ax.set_xlabel("Predicted Values")
             ax.set_ylabel("Residuals")
@@ -86,11 +112,20 @@ class RegressionAnalysisTools:
             DownloadManager.download_plot(fig, "residual_plot")
             plt.close(fig)
         else:
+            # Multi-output
+            y_test_arr = RegressionAnalysisTools._to_array(y_test)
+            y_pred_arr = RegressionAnalysisTools._to_array(y_pred)
+            
+            if y_test_arr.ndim == 1:
+                y_test_arr = y_test_arr.reshape(-1, 1)
+            if y_pred_arr.ndim == 1:
+                y_pred_arr = y_pred_arr.reshape(-1, 1)
+            
             for i, col in enumerate(target_names):
-                residuals = y_test[col] - y_pred[:, i]
+                residuals = y_test_arr[:, i] - y_pred_arr[:, i]
                 
                 fig, ax = plt.subplots(figsize=(8, 6))
-                ax.scatter(y_pred[:, i], residuals, alpha=0.6, edgecolors='k')
+                ax.scatter(y_pred_arr[:, i], residuals, alpha=0.6, edgecolors='k')
                 ax.axhline(y=0, color='r', linestyle='--', lw=2)
                 ax.set_xlabel(f"Predicted {col}")
                 ax.set_ylabel("Residuals")
@@ -113,7 +148,10 @@ class RegressionAnalysisTools:
         st.markdown("### 📊 **Error Distribution**")
         
         if not is_multioutput:
-            errors = y_test - y_pred
+            # Single output
+            y_test_arr = RegressionAnalysisTools._to_array(y_test)
+            y_pred_arr = RegressionAnalysisTools._to_array(y_pred)
+            errors = y_test_arr - y_pred_arr
             
             fig, ax = plt.subplots(figsize=(8, 6))
             ax.hist(errors, bins=30, edgecolor='black', alpha=0.7)
@@ -128,8 +166,17 @@ class RegressionAnalysisTools:
             DownloadManager.download_plot(fig, "error_distribution")
             plt.close(fig)
         else:
+            # Multi-output
+            y_test_arr = RegressionAnalysisTools._to_array(y_test)
+            y_pred_arr = RegressionAnalysisTools._to_array(y_pred)
+            
+            if y_test_arr.ndim == 1:
+                y_test_arr = y_test_arr.reshape(-1, 1)
+            if y_pred_arr.ndim == 1:
+                y_pred_arr = y_pred_arr.reshape(-1, 1)
+            
             for i, col in enumerate(target_names):
-                errors = y_test[col] - y_pred[:, i]
+                errors = y_test_arr[:, i] - y_pred_arr[:, i]
                 
                 fig, ax = plt.subplots(figsize=(8, 6))
                 ax.hist(errors, bins=30, edgecolor='black', alpha=0.7)
@@ -147,34 +194,52 @@ class RegressionAnalysisTools:
     def show_prediction_table(
         y_test,
         y_pred,
-        is_multioutput: bool = False,
-        target_names: Optional[List[str]] = None
+        is_multioutput: bool,
+        target_names: List[str]
     ) -> None:
-        """Display prediction table."""
-        st.markdown("### 📄 **Prediction Table**")
+        """Display prediction comparison table."""
+        st.markdown("### 📋 Prediction Table")
         
-        if not is_multioutput:
-            combined = pd.DataFrame({
-                'Actual': y_test.values,
-                'Predicted': y_pred,
-                'Error': y_test.values - y_pred
-            })
-            st.dataframe(combined)
+        # Convert to arrays
+        y_test_arr = RegressionAnalysisTools._to_array(y_test)
+        y_pred_arr = RegressionAnalysisTools._to_array(y_pred)
+        
+        if is_multioutput:
+            # Ensure 2D
+            if y_test_arr.ndim == 1:
+                y_test_arr = y_test_arr.reshape(-1, 1)
+            if y_pred_arr.ndim == 1:
+                y_pred_arr = y_pred_arr.reshape(-1, 1)
+            
+            # Create comparison dataframe
+            comparison_data = {}
+            for i, target_name in enumerate(target_names):
+                comparison_data[f'Actual_{target_name}'] = y_test_arr[:, i]
+                comparison_data[f'Predicted_{target_name}'] = y_pred_arr[:, i]
+                comparison_data[f'Error_{target_name}'] = y_test_arr[:, i] - y_pred_arr[:, i]
+            
+            comparison_df = pd.DataFrame(comparison_data)
         else:
-            pred_df = pd.DataFrame(
-                y_pred,
-                columns=[f"Predicted_{col}" for col in target_names]
-            )
-            combined = pd.concat([
-                y_test.reset_index(drop=True),
-                pred_df
-            ], axis=1)
-            
-            # Add error columns
-            for i, col in enumerate(target_names):
-                combined[f"Error_{col}"] = combined[col] - combined[f"Predicted_{col}"]
-            
-            st.dataframe(combined)
+            # Single output
+            comparison_df = pd.DataFrame({
+                'Actual': y_test_arr.ravel() if y_test_arr.ndim > 1 else y_test_arr,
+                'Predicted': y_pred_arr.ravel() if y_pred_arr.ndim > 1 else y_pred_arr,
+                'Error': (y_test_arr.ravel() if y_test_arr.ndim > 1 else y_test_arr) - 
+                         (y_pred_arr.ravel() if y_pred_arr.ndim > 1 else y_pred_arr)
+            })
+        
+        # Show sample
+        st.write("**Sample Predictions (first 10 rows):**")
+        st.dataframe(comparison_df.head(10))
+        
+        # Download button
+        csv = comparison_df.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            label="📥 Download Full Prediction Table",
+            data=csv,
+            file_name="predictions.csv",
+            mime="text/csv"
+        )
     
     @staticmethod
     def show_learning_curve(model, X_train, y_train, title: str = "Learning Curve") -> None:

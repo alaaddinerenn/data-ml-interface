@@ -6,6 +6,7 @@ from models import (
     # Regressors
     linear_regression_page,
     sgd_regression_page,
+    knn_regression_page,
     
     # Classifiers
     decision_tree_page,
@@ -150,7 +151,8 @@ if df is not None and not df.empty:
                 " ",
                 options=[
                     "Linear Regression",
-                    "Stochastic Gradient Descent Regressor"
+                    "Stochastic Gradient Descent Regressor",
+                    "KNN Regressor"
                 ],
                 index=None,
                 help="Select a regression algorithm",
@@ -172,6 +174,14 @@ if df is not None and not df.empty:
                     unsafe_allow_html=True
                 )
                 sgd_regression_page(df)
+            
+            elif model_choice == "KNN Regressor":
+                st.markdown(
+                    "<span style='font-size:18px; font-weight:bold;'>"
+                    "👥 Distance-based regression using K nearest neighbors.</span>",
+                    unsafe_allow_html=True
+                )
+                knn_regression_page(df)
 
         # ============================================
         # CLASSIFICATION
