@@ -112,6 +112,9 @@ class StatisticsDisplay:
         feature_df = df.drop(columns=target_cols)
         StatisticsDisplay._show_statistical_summary(feature_df)
         
+        # ✅ Correlation matrix (if numerical features exist)
+        StatisticsDisplay._show_correlation_if_applicable(df, target_cols)
+        
         # Visualizations
         StatisticsDisplay._show_feature_visualizations(df, target_col)
     
@@ -129,6 +132,9 @@ class StatisticsDisplay:
         feature_df = df.drop(columns=target_cols)
         StatisticsDisplay._show_statistical_summary(feature_df)
         
+        # Correlation matrix (if numerical features exist)
+        StatisticsDisplay._show_correlation_if_applicable(df, target_cols)
+        
         # Visualizations
         StatisticsDisplay._show_feature_visualizations(df, target_col)
     
@@ -138,10 +144,9 @@ class StatisticsDisplay:
         st.markdown("### 📈 Regression Analysis")
         
         # Feature analysis
-        feature_df = df.drop(columns=target_cols)
         StatisticsDisplay._show_statistical_summary(df)
         
-        # Correlation analysis
+        # Correlation analysis (always applicable for regression)
         PlottingTools.plot_correlation_heatmap(df)
     
     @staticmethod
@@ -150,7 +155,38 @@ class StatisticsDisplay:
         st.markdown("### 📊 General Analysis")
         
         StatisticsDisplay._show_statistical_summary(df)
-        PlottingTools.plot_correlation_heatmap(df)
+        
+        # Correlation matrix (if numerical features exist)
+        StatisticsDisplay._show_correlation_if_applicable(df, exclude_cols=[])
+    
+    @staticmethod
+    def _show_correlation_if_applicable(
+        df: pd.DataFrame,
+        exclude_cols: List[str] = None
+    ) -> None:
+        """
+        Show correlation heatmap if dataset has numerical features.
+        
+        Args:
+            df: DataFrame to analyze
+            exclude_cols: Columns to exclude from correlation (e.g., target/label)
+        """
+        exclude_cols = exclude_cols or []
+        
+        # Get numerical columns (excluding target/label/cluster)
+        feature_df = df.drop(columns=exclude_cols, errors='ignore')
+        numeric_cols = feature_df.select_dtypes(include=['number']).columns.tolist()
+        
+        # ✅ Check if we have enough numerical features
+        if len(numeric_cols) >= 2:
+            st.markdown("---")
+            PlottingTools.plot_correlation_heatmap(feature_df)
+        else:
+            # Optional: Show info message
+            if len(numeric_cols) == 1:
+                st.info("ℹ️ Only one numerical feature found. Correlation matrix requires at least 2 features.")
+            else:
+                st.info("ℹ️ No numerical features found for correlation analysis.")
     
     @staticmethod
     def _show_class_distribution(
@@ -162,7 +198,6 @@ class StatisticsDisplay:
         st.markdown(f"#### {title}")
         
         class_counts = df[target_col].value_counts()
-        
         
         st.dataframe(class_counts.to_frame("Count"))
     
