@@ -45,7 +45,7 @@ class DownloadManager:
         
         feature_part = feature_part.replace(" ", "_")
         
-        # ✅ FIX: Create unique hash-based keys to avoid duplicates
+        # Create unique hash-based keys to avoid duplicates
         # Combine graph_type and feature_part to create unique identifier
         unique_string = f"{graph_type}_{feature_part}_{id(fig)}"
         key_hash = hashlib.md5(unique_string.encode()).hexdigest()[:8]

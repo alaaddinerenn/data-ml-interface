@@ -45,7 +45,6 @@ st.html(
 
         <h2 style=\"font-size: 28px; color: #333; margin-bottom: 15px;\">🚀 Future Enhancements</h2>
         <ul style=\"font-size: 20px; color: #444; padding-left: 20px; list-style-type: disc;\">
-            <li style=\"margin-bottom: 10px;\">Add support for additional file formats (e.g., JSON, Parquet).</li>
             <li style=\"margin-bottom: 10px;\">Implement advanced machine learning algorithms (e.g., Neural Networks, SVMs).</li>
             <li style=\"margin-bottom: 10px;\">Enhance visualization options with interactive plots.</li>
             <li style=\"margin-bottom: 10px;\">Add automated hyperparameter tuning for models.</li>

@@ -6,10 +6,7 @@ from sklearn.cluster import KMeans, DBSCAN, AgglomerativeClustering
 from .base import BaseClusterer
 
 
-# ============================================
 # KMEANS CLUSTERING
-# ============================================
-
 class KMeansModel(BaseClusterer):
     """KMeans Clustering implementation."""
     
@@ -23,7 +20,7 @@ class KMeansModel(BaseClusterer):
     def get_model_params(self) -> Dict[str, Any]:
         """Get KMeans specific parameters."""
         
-        # ✅ 1. SCALING OPTIONS FIRST
+        # 1. SCALING OPTIONS FIRST
         st.markdown("#### 📊 Scaling Options")
         st.info("🎯 KMeans is distance-based and requires feature scaling")
         
@@ -37,7 +34,7 @@ class KMeansModel(BaseClusterer):
         
         st.markdown("---")
         
-        # ✅ 2. KMEANS PARAMETERS
+        # 2. KMEANS PARAMETERS
         st.markdown("#### ⚙️ KMeans Parameters")
         
         n_clusters = st.slider(
@@ -101,10 +98,7 @@ class KMeansModel(BaseClusterer):
             )
 
 
-# ============================================
 # DBSCAN CLUSTERING
-# ============================================
-
 class DBSCANModel(BaseClusterer):
     """DBSCAN Clustering implementation."""
     
@@ -118,7 +112,7 @@ class DBSCANModel(BaseClusterer):
     def get_model_params(self) -> Dict[str, Any]:
         """Get DBSCAN specific parameters."""
         
-        # ✅ 1. SCALING OPTIONS FIRST
+        # 1. SCALING OPTIONS FIRST
         st.markdown("#### 📊 Scaling Options")
         st.info("🎯 DBSCAN is distance-based and requires feature scaling")
         
@@ -132,7 +126,7 @@ class DBSCANModel(BaseClusterer):
         
         st.markdown("---")
         
-        # ✅ 2. DBSCAN PARAMETERS
+        # 2. DBSCAN PARAMETERS
         st.markdown("#### ⚙️ DBSCAN Parameters")
         
         eps = st.slider(
@@ -225,10 +219,7 @@ class DBSCANModel(BaseClusterer):
             plt.close(fig)
 
 
-# ============================================
 # AGGLOMERATIVE CLUSTERING
-# ============================================
-
 class AgglomerativeModel(BaseClusterer):
     """Agglomerative Hierarchical Clustering implementation."""
     
@@ -242,7 +233,7 @@ class AgglomerativeModel(BaseClusterer):
     def get_model_params(self) -> Dict[str, Any]:
         """Get Agglomerative specific parameters."""
         
-        # ✅ 1. SCALING OPTIONS FIRST
+        # 1. SCALING OPTIONS FIRST
         st.markdown("#### 📊 Scaling Options")
         st.info("🎯 Agglomerative is distance-based and requires feature scaling")
         
@@ -256,7 +247,7 @@ class AgglomerativeModel(BaseClusterer):
         
         st.markdown("---")
         
-        # ✅ 2. AGGLOMERATIVE PARAMETERS
+        # 2. AGGLOMERATIVE PARAMETERS
         st.markdown("#### ⚙️ Agglomerative Parameters")
         
         n_clusters = st.slider(
@@ -333,10 +324,7 @@ class AgglomerativeModel(BaseClusterer):
             plt.close(fig)
 
 
-# ============================================
 # PUBLIC API
-# ============================================
-
 def kmeans_page(df: pd.DataFrame) -> None:
     """Entry point for KMeans page."""
     model = KMeansModel()

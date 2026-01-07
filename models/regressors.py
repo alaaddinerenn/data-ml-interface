@@ -8,10 +8,7 @@ from sklearn.neighbors import KNeighborsRegressor
 from .base import BaseRegressor
 
 
-# ============================================
 # LINEAR REGRESSION
-# ============================================
-
 class LinearRegressionModel(BaseRegressor):
     """Linear Regression implementation."""
     
@@ -33,7 +30,7 @@ class LinearRegressionModel(BaseRegressor):
     def get_model_params(self) -> Dict[str, Any]:
         """Get Linear Regression parameters."""
         
-        # ✅ 1. SCALING OPTIONS (OPTIONAL BUT RECOMMENDED)
+        # 1. SCALING OPTIONS (OPTIONAL BUT RECOMMENDED)
         st.markdown("#### 📊 Scaling Options")
         st.info("💡 Linear Regression doesn't require scaling, but it can improve numerical stability")
         
@@ -54,7 +51,7 @@ class LinearRegressionModel(BaseRegressor):
         
         st.markdown("---")
         
-        # ✅ 2. LINEAR REGRESSION OPTIONS
+        # 2. LINEAR REGRESSION OPTIONS
         st.markdown("#### ⚙️ Linear Regression Options")
         
         fit_intercept = st.checkbox(
@@ -84,10 +81,7 @@ class LinearRegressionModel(BaseRegressor):
         ]
 
 
-# ============================================
 # SGD REGRESSOR
-# ============================================
-
 class SGDRegressorModel(BaseRegressor):
     """SGD Regressor implementation with scaling support."""
     
@@ -106,7 +100,7 @@ class SGDRegressorModel(BaseRegressor):
     def get_model_params(self) -> Dict[str, Any]:
         """Get SGD specific parameters."""
         
-        # ✅ 1. SCALING OPTIONS FIRST (BEFORE TRAIN BUTTON)
+        # 1. SCALING OPTIONS FIRST (BEFORE TRAIN BUTTON)
         st.markdown("#### 📊 Scaling Options")
         st.info("⚡ SGD requires feature scaling for optimal performance")
         
@@ -125,7 +119,7 @@ class SGDRegressorModel(BaseRegressor):
             help="Recommended when target values are large (e.g., California Housing prices)"
         )
         
-        # ✅ 2. SGD HYPERPARAMETERS
+        # 2. SGD HYPERPARAMETERS
         st.markdown("#### ⚙️ SGD Hyperparameters")
         
         alpha = st.number_input(
@@ -313,10 +307,7 @@ class SGDRegressorModel(BaseRegressor):
         ]
 
 
-# ============================================
 # KNN REGRESSOR
-# ============================================
-
 class KNNRegressorModel(BaseRegressor):
     """K-Nearest Neighbors Regressor with optional scaling."""
     
@@ -336,13 +327,13 @@ class KNNRegressorModel(BaseRegressor):
     def get_model_params(self) -> Dict[str, Any]:
         """Get KNN specific parameters."""
         
-        # ✅ 1. SCALING OPTIONS FIRST
+        # 1. SCALING OPTIONS FIRST
         st.markdown("#### 📊 Scaling Options")
         st.info("🎯 KNN is distance-based and strongly recommended to use feature scaling")
         
         scaler_option = st.selectbox(
             "Feature Scaling Method",
-            ["StandardScaler (Z-Score)", "MinMaxScaler", "MaxAbsScaler", "None"],  # ✅ Added None
+            ["StandardScaler (Z-Score)", "MinMaxScaler", "MaxAbsScaler", "None"],  # Added None
             index=0,
             key=f"{self.session_key}_scaler",
             help="Distance-based algorithms require all features to be on the same scale"
@@ -355,7 +346,7 @@ class KNNRegressorModel(BaseRegressor):
             help="Can improve performance for large target values"
         )
         
-        # ✅ 2. KNN HYPERPARAMETERS
+        # 2. KNN HYPERPARAMETERS
         st.markdown("#### ⚙️ KNN Hyperparameters")
         
         n_neighbors = st.slider(
@@ -403,10 +394,7 @@ class KNNRegressorModel(BaseRegressor):
         ]
 
 
-# ============================================
 # PUBLIC API
-# ============================================
-
 def linear_regression_page(df: pd.DataFrame) -> None:
     """Entry point for Linear Regression page."""
     model = LinearRegressionModel()

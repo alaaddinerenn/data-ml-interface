@@ -342,7 +342,7 @@ class StatisticsDisplay:
         
         st.markdown("---")
         
-        # ✅ Feature selection if more than 15 features
+        # Feature selection if more than 15 features
         if len(numeric_cols) > 15:
             st.markdown("### 🔥 Correlation Heatmap")
             st.warning(

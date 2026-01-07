@@ -15,10 +15,7 @@ from .base import BaseClassifier
 from utils import DownloadManager
 
 
-# ============================================
 # DECISION TREE CLASSIFIER
-# ============================================
-
 class DecisionTreeModel(BaseClassifier):
     """Decision Tree Classifier implementation."""
     
@@ -85,10 +82,7 @@ class DecisionTreeModel(BaseClassifier):
             plt.close(fig)
 
 
-# ============================================
 # KNN CLASSIFIER
-# ============================================
-
 class KNNModel(BaseClassifier):
     """K-Nearest Neighbors Classifier implementation."""
     
@@ -102,7 +96,7 @@ class KNNModel(BaseClassifier):
     def get_model_params(self) -> Dict[str, Any]:
         """Get KNN specific parameters."""
         
-        # ✅ 1. SCALING OPTIONS FIRST
+        # 1. SCALING OPTIONS FIRST
         st.markdown("#### 📊 Scaling Options")
         st.info("🎯 KNN is distance-based and strongly recommended to use feature scaling")
         
@@ -116,7 +110,7 @@ class KNNModel(BaseClassifier):
         
         st.markdown("---")
         
-        # ✅ 2. KNN PARAMETERS
+        # 2. KNN PARAMETERS
         st.markdown("#### ⚙️ KNN Parameters")
         
         # Parameter selection mode
@@ -243,10 +237,7 @@ class KNNModel(BaseClassifier):
         ]
 
 
-# ============================================
 # RANDOM FOREST CLASSIFIER
-# ============================================
-
 class RandomForestModel(BaseClassifier):
     """Random Forest Classifier implementation."""
     
@@ -332,10 +323,7 @@ class RandomForestModel(BaseClassifier):
             st.dataframe(fi_df)
 
 
-# ============================================
 # XGBOOST CLASSIFIER
-# ============================================
-
 class XGBoostModel(BaseClassifier):
     """XGBoost Classifier implementation."""
     
@@ -516,10 +504,7 @@ class XGBoostModel(BaseClassifier):
                     st.dataframe(fi_df)
 
 
-# ============================================
 # PUBLIC API FUNCTIONS
-# ============================================
-
 def decision_tree_page(df: pd.DataFrame) -> None:
     """Entry point for Decision Tree page."""
     model = DecisionTreeModel()

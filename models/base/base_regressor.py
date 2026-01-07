@@ -185,7 +185,7 @@ class BaseRegressor(ABC):
         Apply scaling to features and optionally to target.
         Reads scaler options from session_state (set by widgets).
         """
-        # ✅ Read scaler options from session_state
+        # Read scaler options from session_state
         scaler_option = st.session_state.get(
             f'{self.session_key}_scaler',
             'None'
@@ -359,7 +359,7 @@ class BaseRegressor(ABC):
             random_state=common_params['random_seed']
         )
         
-        # ✅ Apply scaling (reads from session_state)
+        # Apply scaling (reads from session_state)
         X_train, X_test, y_train, y_test = self.apply_scaling(
             X_train, X_test, y_train, y_test,
             features, is_multioutput
@@ -378,7 +378,7 @@ class BaseRegressor(ABC):
         st.markdown("---")
         st.markdown("### 📊 Model Performance Metrics")
         
-        # ✅ Convert to arrays
+        # Convert to arrays
         y_test_arr = self._to_array(y_test)
         y_pred_arr = self._to_array(y_pred)
         
@@ -445,7 +445,7 @@ class BaseRegressor(ABC):
                 model.fit(X_train, y_train)
                 y_pred_scaled = model.predict(X_test)
                 
-                # ✅ Inverse transform if needed
+                # Inverse transform if needed
                 y_pred, y_test_original = self.inverse_transform_predictions(
                     y_pred_scaled, y_test, is_multioutput
                 )
